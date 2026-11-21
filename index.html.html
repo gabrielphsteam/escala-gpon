@@ -1,0 +1,3523 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escala GPON — Gestão e Auditoria de Escalas</title>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
+  <style>
+    :root {
+      --bg: #f4f6fa;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-soft: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --danger-text: #991b1b;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --warning-text: #92400e;
+      --wknd-bg: #eef2ff;
+      --holiday-bg: #fef2f2;
+      --special-bg: #f5f3ff;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.14);
+      --radius: 10px;
+      --radius-sm: 6px;
+
+      /* Cores oficiais da planilha */
+      --shift-pres-bg: #4472C4;
+      --shift-pres-fg: #ffffff;
+      --shift-ho-bg: #92D050;
+      --shift-ho-fg: #111827;
+      --shift-pe-bg: #FFD966;
+      --shift-pe-fg: #111827;
+      --shift-pi-bg: #FFD966;
+      --shift-pi-fg: #111827;
+      --shift-pn-bg: #F4B183;
+      --shift-pn-fg: #111827;
+      --shift-f-bg: #F4B183;
+      --shift-f-fg: #111827;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0b1120;
+      --surface: #111827;
+      --surface-2: #1e293b;
+      --border: #334155;
+      --border-strong: #475569;
+      --text: #f1f5f9;
+      --text-muted: #cbd5e1;
+      --text-soft: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --primary-soft: rgba(59, 130, 246, 0.16);
+      --success-bg: rgba(22, 163, 74, 0.2);
+      --success-text: #86efac;
+      --danger-bg: rgba(220, 38, 38, 0.22);
+      --danger-text: #fca5a5;
+      --warning-bg: rgba(217, 119, 6, 0.22);
+      --warning-text: #fcd34d;
+      --wknd-bg: #1e2540;
+      --holiday-bg: #321b22;
+      --special-bg: #261e3d;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, border-color 0.15s, transform 0.08s;
+    }
+    button:hover:not(:disabled) { background: var(--surface-2); border-color: var(--border-strong); }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
+    }
+    .btn-danger:hover:not(:disabled) { background: #b91c1c; border-color: #b91c1c; }
+    .btn-ghost { background: transparent; border-color: transparent; }
+    .btn-ghost:hover:not(:disabled) { background: var(--surface-2); border-color: var(--border); }
+    .btn-active {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-sm { padding: 5px 9px; font-size: 12.5px; }
+
+    /* Topo fixo */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #2563eb, #4472C4);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+    .brand-title { font-weight: 700; font-size: 16px; line-height: 1.2; }
+    .brand-sub { font-size: 11.5px; color: var(--text-soft); }
+
+    .topbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .period-select {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      font-weight: 600;
+      min-width: 215px;
+    }
+
+    /* Dropdown Mais */
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      min-width: 240px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 6px;
+      z-index: 80;
+      display: none;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item {
+      width: 100%;
+      justify-content: flex-start;
+      border: none;
+      background: transparent;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      text-align: left;
+    }
+    .dropdown-item:hover { background: var(--surface-2); }
+    .dropdown-sep { height: 1px; background: var(--border); margin: 5px 4px; }
+
+    /* Faixa de situação */
+    .status-banner {
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .status-banner.ok { background: var(--success-bg); color: var(--success-text); }
+    .status-banner.error { background: var(--danger-bg); color: var(--danger-text); }
+    .status-banner.warn { background: var(--warning-bg); color: var(--warning-text); }
+    .status-left { display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 260px; }
+    .status-badge {
+      font-weight: 700;
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .status-top-errors {
+      margin: 2px 0 0 0;
+      padding-left: 16px;
+      font-size: 12.5px;
+    }
+    .status-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Abas */
+    .tabs-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      background: transparent;
+      padding: 11px 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .tab-btn:hover { background: transparent; color: var(--text); border-bottom-color: var(--border-strong); }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .badge-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--danger);
+      color: #fff;
+    }
+    .badge-count.zero { background: var(--success); }
+
+    /* Main */
+    main { padding: 18px 20px 40px; max-width: 1680px; margin: 0 auto; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Cards resumo */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .kpi-label { font-size: 12px; color: var(--text-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .kpi-value { font-size: 24px; font-weight: 800; margin-top: 4px; line-height: 1.15; }
+    .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Toolbar da grade */
+    .grid-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .toolbar-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .sim-banner {
+      background: var(--primary-soft);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      margin-bottom: 10px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .sim-banner.show { display: flex; }
+
+    /* Legenda recolhível */
+    .legend-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .legend-box.open { display: block; }
+    .legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      align-items: center;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; }
+    .swatch {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 68px;
+      height: 24px;
+      padding: 0 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 11px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+    }
+
+    /* Barra de progresso do gerador */
+    .progress-wrap {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 12px;
+    }
+    .progress-wrap.show { display: block; }
+    .progress-header { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+    .progress-bar { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.12s linear; }
+
+    /* Grade da escala */
+    .schedule-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: auto;
+      max-height: 70vh;
+    }
+    table.schedule-grid {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: max-content;
+      min-width: 100%;
+      font-size: 12px;
+    }
+    table.schedule-grid th, table.schedule-grid td {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+      text-align: center;
+      vertical-align: middle;
+    }
+    table.schedule-grid thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--surface-2);
+      padding: 6px 4px;
+      min-width: 62px;
+      cursor: pointer;
+      user-select: none;
+    }
+    table.schedule-grid thead th:hover { filter: brightness(0.96); }
+    table.schedule-grid thead th.col-tech {
+      left: 0;
+      z-index: 20;
+      min-width: 235px;
+      max-width: 255px;
+      text-align: left;
+      padding: 8px 12px;
+      cursor: default;
+      border-right: 2px solid var(--border-strong);
+    }
+    table.schedule-grid tbody td.col-tech,
+    table.schedule-grid tfoot td.col-tech {
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      background: var(--surface);
+      text-align: left;
+      padding: 6px 12px;
+      border-right: 2px solid var(--border-strong);
+    }
+    table.schedule-grid tbody td.col-tech { cursor: pointer; }
+    table.schedule-grid tbody td.col-tech:hover { background: var(--surface-2); }
+    table.schedule-grid tfoot td {
+      background: var(--surface-2);
+      font-weight: 700;
+      padding: 5px 4px;
+      font-size: 11.5px;
+    }
+
+    th.is-wknd { background: var(--wknd-bg) !important; }
+    th.is-holiday { background: var(--holiday-bg) !important; }
+    th.is-special { background: var(--special-bg) !important; }
+    th.day-has-error { box-shadow: inset 0 -3px 0 var(--danger); }
+    th.day-has-warn { box-shadow: inset 0 -3px 0 var(--warning); }
+
+    .day-dow { font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--text-soft); }
+    .day-num { font-size: 12.5px; font-weight: 800; color: var(--text); }
+    .day-tag { font-size: 9.5px; font-weight: 700; color: var(--danger); margin-top: 1px; }
+    .day-tag.special { color: #7c3aed; }
+
+    .tech-name { font-weight: 600; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+    .role-pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 999px;
+      margin-top: 2px;
+    }
+    .role-Atendimento { background: #dbeafe; color: #1e40af; }
+    .role-Monitoramento { background: #ede9fe; color: #5b21b6; }
+    .role-Planilhas { background: #dcfce7; color: #166534; }
+    [data-theme="dark"] .role-Atendimento { background: rgba(59, 130, 246, 0.25); color: #93c5fd; }
+    [data-theme="dark"] .role-Monitoramento { background: rgba(139, 92, 246, 0.25); color: #c4b5fd; }
+    [data-theme="dark"] .role-Planilhas { background: rgba(34, 197, 94, 0.25); color: #86efac; }
+
+    .shift-cell {
+      height: 40px;
+      min-width: 62px;
+      position: relative;
+      transition: transform 0.08s;
+    }
+    .shift-cell.sim-clickable { cursor: pointer; }
+    .shift-cell.sim-clickable:hover { filter: brightness(0.95); }
+    .shift-box {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+      line-height: 1.1;
+      padding: 2px;
+    }
+    .shift-sub { font-size: 9.5px; font-weight: 600; opacity: 0.85; }
+
+    .shift-PRES { background: var(--shift-pres-bg); color: var(--shift-pres-fg); }
+    .shift-HO { background: var(--shift-ho-bg); color: var(--shift-ho-fg); }
+    .shift-PE { background: var(--shift-pe-bg); color: var(--shift-pe-fg); }
+    .shift-PI { background: var(--shift-pi-bg); color: var(--shift-pi-fg); }
+    .shift-PN { background: var(--shift-pn-bg); color: var(--shift-pn-fg); }
+    .shift-F { background: var(--shift-f-bg); color: var(--shift-f-fg); }
+
+    .cell-error { box-shadow: inset 0 0 0 2.5px #dc2626 !important; }
+    .cell-warn { box-shadow: inset 0 0 0 2.5px #d97706 !important; }
+    .cell-pulse { animation: pulseHighlight 1.6s ease-out; }
+    @keyframes pulseHighlight {
+      0% { box-shadow: 0 0 0 4px #2563eb, inset 0 0 0 3px #2563eb; }
+      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+
+    /* Painéis genéricos */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+    .card-title { font-size: 15px; font-weight: 700; margin: 0 0 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+
+    /* Problemas */
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+    .problem-list { display: flex; flex-direction: column; gap: 8px; }
+    .problem-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .problem-item:hover { background: var(--surface-2); border-color: var(--primary); }
+    .problem-sev {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+    .sev-ERRO { background: var(--danger-bg); color: var(--danger-text); }
+    .sev-ALERTA { background: var(--warning-bg); color: var(--warning-text); }
+
+    /* Tabelas de análise / IA */
+    .data-table-wrap { overflow-x: auto; }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    table.data-table th, table.data-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    table.data-table th {
+      background: var(--surface-2);
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    table.data-table td.num, table.data-table th.num { text-align: center; }
+    .bar-mini {
+      display: inline-block;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--primary);
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    /* Assistente IA */
+    .ai-layout { display: grid; grid-template-columns: 340px 1fr; gap: 16px; align-items: start; }
+    @media (max-width: 960px) { .ai-layout { grid-template-columns: 1fr; } }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+    }
+    .quick-prompts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    @media (max-width: 600px) { .quick-prompts { grid-template-columns: 1fr; } }
+    .ai-log {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      max-height: 150px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      white-space: pre-wrap;
+    }
+    .ai-response-text {
+      white-space: pre-wrap;
+      font-size: 13.5px;
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+    .diff-summary {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .diff-pill {
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 13px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    /* Regras e Equipe */
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 14px;
+    }
+    .rule-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+    .rule-card h4 { margin: 0 0 8px 0; font-size: 13.5px; }
+    .rule-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; font-size: 12.5px; }
+    .rule-row input[type="number"] {
+      width: 72px;
+      padding: 4px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      text-align: center;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 640px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .modal-header h3 { margin: 0; font-size: 16px; }
+    .modal-body { padding: 16px 18px; overflow-y: auto; }
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg);
+      font-size: 13px;
+      max-width: 360px;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+    .muted { color: var(--text-soft); font-size: 12.5px; }
+    .tag-ok { color: var(--success); font-weight: 700; }
+    .tag-err { color: var(--danger); font-weight: 700; }
+    .tag-warn { color: var(--warning); font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <!-- TOPO FIXO -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">GP</div>
+      <div>
+        <div class="brand-title">Escala GPON</div>
+        <div class="brand-sub">Supervisor: Gabriel de Souza Paschoa (fora da escala e da contagem)</div>
+      </div>
+    </div>
+
+    <div class="topbar-controls">
+      <label for="periodSelect" class="sr-only">Selecionar período</label>
+      <select id="periodSelect" class="period-select" aria-label="Período da escala"></select>
+
+      <button id="btnDownloadExcel" class="btn-primary" type="button">
+        <span>⬇</span> Baixar Excel
+      </button>
+
+      <div class="dropdown">
+        <button id="btnMoreMenu" type="button" aria-haspopup="true" aria-expanded="false">
+          Mais ▾
+        </button>
+        <div id="moreMenu" class="dropdown-menu" role="menu">
+          <button class="dropdown-item" id="menuNextPeriod" role="menuitem" type="button">📅 Criar próximo período</button>
+          <button class="dropdown-item" id="menuImportXlsx" role="menuitem" type="button">📂 Carregar planilha .xlsx</button>
+          <button class="dropdown-item" id="menuCopySheets" role="menuitem" type="button">📋 Copiar para o Google Sheets</button>
+          <div class="dropdown-sep"></div>
+          <button class="dropdown-item" id="menuToggleTheme" role="menuitem" type="button">🌓 Alternar tema claro/escuro</button>
+        </div>
+      </div>
+      <input type="file" id="xlsxFileInput" accept=".xlsx" class="sr-only" />
+    </div>
+  </header>
+
+  <!-- FAIXA DE SITUAÇÃO -->
+  <section id="statusBanner" class="status-banner ok" aria-live="polite">
+    <div class="status-left">
+      <div>
+        <div id="statusHeadline" class="status-badge">✔ Escala dentro das regras</div>
+        <ul id="statusTopErrors" class="status-top-errors" style="display:none;"></ul>
+      </div>
+    </div>
+    <div class="status-actions">
+      <button id="btnGoProblems" class="btn-sm" type="button">Ver problemas</button>
+      <button id="btnAskAIFix" class="btn-sm btn-primary" type="button">✨ Pedir à IA para corrigir</button>
+    </div>
+  </section>
+
+  <!-- ABAS -->
+  <nav class="tabs-bar" role="tablist" aria-label="Seções do painel">
+    <button class="tab-btn active" data-tab="escala" role="tab" aria-selected="true" type="button">Escala</button>
+    <button class="tab-btn" data-tab="problemas" role="tab" aria-selected="false" type="button">
+      Problemas <span id="tabProblemsBadge" class="badge-count zero">0</span>
+    </button>
+    <button class="tab-btn" data-tab="ia" role="tab" aria-selected="false" type="button">Assistente IA</button>
+    <button class="tab-btn" data-tab="analises" role="tab" aria-selected="false" type="button">Análises</button>
+    <button class="tab-btn" data-tab="regras" role="tab" aria-selected="false" type="button">Regras</button>
+  </nav>
+
+  <main>
+    <!-- ABA ESCALA -->
+    <section id="panel-escala" class="tab-panel active" role="tabpanel">
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="grid-toolbar">
+        <div class="toolbar-group">
+          <button id="btnToggleSim" type="button">🔄 Simular trocas</button>
+          <button id="btnUndo" type="button" disabled>↩ Desfazer</button>
+          <button id="btnAutoDraft" class="btn-primary" type="button">⚙ Gerar rascunho automático</button>
+        </div>
+        <div class="toolbar-group">
+          <button id="btnToggleLegend" type="button">🎨 Legenda das cores ▾</button>
+          <button id="btnEditTeamQuick" type="button">👥 Editar equipe</button>
+        </div>
+      </div>
+
+      <div id="simBanner" class="sim-banner">
+        <span><strong>Modo Simulação ativo:</strong> clique em qualquer célula para alternar (Dia útil: PL azul → HO verde → PE amarelo → FOLGA | Fds/Feriado: PN laranja → PI amarelo → FOLGA). Auditoria atualizada em tempo real.</span>
+        <button id="btnExitSim" class="btn-sm" type="button">Sair da simulação</button>
+      </div>
+
+      <div id="progressWrap" class="progress-wrap" aria-live="polite">
+        <div class="progress-header">
+          <span id="progressLabel">Otimizando escala...</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      </div>
+
+      <div id="legendBox" class="legend-box">
+        <div class="legend-items">
+          <div class="legend-item"><span class="swatch shift-PRES">PL</span> <span><strong>PRES</strong> — Presencial normal (Seg–Sex) · #4472C4</span></div>
+          <div class="legend-item"><span class="swatch shift-HO">PL</span> <span><strong>HO</strong> — Home office normal (Seg–Sex) · #92D050</span></div>
+          <div class="legend-item"><span class="swatch shift-PE">PL</span> <span><strong>PE</strong> — Plantão estendido 08h–20h (Seg–Sex) · #FFD966</span></div>
+          <div class="legend-item"><span class="swatch shift-PI">PRESENTE</span> <span><strong>PI</strong> — Plantão integral 08h–20h (Sáb/Dom/Fer) · #FFD966</span></div>
+          <div class="legend-item"><span class="swatch shift-PN">PRESENTE</span> <span><strong>PN</strong> — Plantão normal 08h–18h (Sáb/Dom/Fer) · #F4B183</span></div>
+          <div class="legend-item"><span class="swatch shift-F">FOLGA</span> <span><strong>F</strong> — Folga (Qualquer dia) · #F4B183</span></div>
+          <div class="legend-item"><span style="display:inline-block;width:16px;height:16px;border:2.5px solid #dc2626;border-radius:3px;"></span> <span>Erro na célula</span></div>
+          <div class="legend-item"><span style="display:inline-block;width:16px;height:16px;border:2.5px solid #d97706;border-radius:3px;"></span> <span>Alerta na célula</span></div>
+        </div>
+      </div>
+
+      <div class="schedule-container">
+        <table class="schedule-grid" id="scheduleGrid" aria-label="Grade da escala GPON"></table>
+      </div>
+      <p class="muted" style="margin-top:8px;">
+        Dica: clique no <strong>nome de um técnico</strong> para ver histórico e sequência anterior; clique no <strong>cabeçalho de um dia</strong> para ver quem trabalha ou marcar/desmarcar feriado.
+      </p>
+    </section>
+
+    <!-- ABA PROBLEMAS -->
+    <section id="panel-problemas" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <span>Auditoria de Regras — Erros e Alertas</span>
+          <span id="problemsSummaryText" class="muted"></span>
+        </div>
+        <div class="filter-bar">
+          <select id="filterSeverity" aria-label="Filtrar por severidade">
+            <option value="ALL">Todos (Erros e Alertas)</option>
+            <option value="ERRO">Somente Erros</option>
+            <option value="ALERTA">Somente Alertas</option>
+          </select>
+          <select id="filterRule" aria-label="Filtrar por regra">
+            <option value="ALL">Todas as regras</option>
+          </select>
+        </div>
+        <div id="problemList" class="problem-list"></div>
+      </div>
+    </section>
+
+    <!-- ABA ASSISTENTE IA -->
+    <section id="panel-ia" class="tab-panel" role="tabpanel">
+      <div class="ai-layout">
+        <div class="card">
+          <div class="card-title">Configuração Gemini</div>
+          <div class="field">
+            <label for="geminiApiKey">Chave da API do Gemini (salva apenas no navegador)</label>
+            <div style="display:flex;gap:6px;">
+              <input type="password" id="geminiApiKey" placeholder="AIza..." autocomplete="off" />
+              <button id="btnToggleKeyVis" type="button" class="btn-sm" title="Mostrar/ocultar chave">👁</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="geminiModelSelect">Modelo Gemini</label>
+            <div style="display:flex;gap:6px;">
+              <select id="geminiModelSelect"></select>
+              <button id="btnLoadModels" type="button" class="btn-sm" title="Carregar modelos da API">↻</button>
+            </div>
+            <div class="muted" style="margin-top:4px;">Troca automática de modelo em caso de erro de cota (429 / limite diário).</div>
+          </div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;" />
+          <button id="btnCopyForGemini" type="button" style="width:100%;justify-content:center;">
+            📋 Copiar para o Gemini (gemini.google.com)
+          </button>
+          <p class="muted" style="margin-top:6px;">Copia o prompt completo (regras + escala + auditoria + checklist) para usar manualmente no Gemini Web.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Assistente IA com Function Calling (<code>testar_trocas</code>)</div>
+          <div class="quick-prompts">
+            <button type="button" class="btn-ai-quick" data-prompt="best">✨ Montar a melhor escala</button>
+            <button type="button" class="btn-ai-quick" data-prompt="explain">🔍 Explicar os erros</button>
+            <button type="button" class="btn-ai-quick" data-prompt="balance">⚖ Equilibrar plantões e folgas</button>
+            <button type="button" class="btn-ai-quick" data-prompt="next">📅 Planejar o próximo período</button>
+          </div>
+          <div class="field">
+            <label for="aiPromptInput">Instrução personalizada para o Assistente IA</label>
+            <textarea id="aiPromptInput" rows="3" placeholder="Ex.: Corrija todos os erros de sábado e folgas casadas sem mexer no Natal..."></textarea>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+            <button id="btnRunAI" class="btn-primary" type="button">🚀 Enviar para o Gemini</button>
+            <button id="btnClearAI" type="button">Limpar conversa</button>
+          </div>
+
+          <div id="aiLogBox" class="ai-log" style="display:none;"></div>
+          <div id="aiResultArea"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA ANÁLISES -->
+    <section id="panel-analises" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <div class="card-title">Equilíbrio de Plantões, Folgas Casadas e Jornadas por Técnico</div>
+        <div class="data-table-wrap">
+          <table class="data-table" id="analysisTechTable"></table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Resumo de Fins de Semana do Período</div>
+        <div class="data-table-wrap">
+          <table class="data-table" id="analysisWeekendTable"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA REGRAS -->
+    <section id="panel-regras" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <span>Parâmetros das Regras de Auditoria</span>
+          <div style="display:flex;gap:8px;">
+            <button id="btnSaveRules" class="btn-primary btn-sm" type="button">💾 Salvar regras</button>
+            <button id="btnResetRules" class="btn-sm" type="button">↺ Restaurar padrões</button>
+          </div>
+        </div>
+        <div class="rules-grid" id="rulesEditorGrid"></div>
+      </div>
+
+      <div class="card" id="teamManagerCard">
+        <div class="card-title">
+          <span>Equipe GPON (11 técnicos padrão — Supervisor fora da contagem)</span>
+          <button id="btnAddTech" class="btn-primary btn-sm" type="button">+ Adicionar técnico</button>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table" id="teamTable"></table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL GENÉRICO -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Detalhes</h3>
+        <button id="modalCloseBtn" class="btn-ghost btn-sm" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+      <div id="modalFooter" class="modal-footer"></div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script>
+  (() => {
+    'use strict';
+
+    /* =========================================================================
+       1. MÓDULO DE CONFIGURAÇÃO, JORNADAS, EQUIPE E FERIADOS
+       ========================================================================= */
+    const ConfigModule = (() => {
+      const SUPERVISOR = 'Gabriel de Souza Paschoa';
+
+      const ROLES = ['Atendimento', 'Monitoramento', 'Planilhas'];
+
+      const SHIFTS = {
+        PRES: { code: 'PRES', cell: 'PL',       hex: '#4472C4', fg: '#FFFFFF', label: 'Presencial (horário normal)',      when: 'weekday', works: true,  until20: false },
+        HO:   { code: 'HO',   cell: 'PL',       hex: '#92D050', fg: '#111827', label: 'Home office (horário normal)',     when: 'weekday', works: true,  until20: false },
+        PE:   { code: 'PE',   cell: 'PL',       hex: '#FFD966', fg: '#111827', label: 'Plantão estendido 08h–20h',        when: 'weekday', works: true,  until20: true  },
+        PI:   { code: 'PI',   cell: 'PRESENTE', hex: '#FFD966', fg: '#111827', label: 'Plantão integral 08h–20h',         when: 'wknd',    works: true,  until20: true  },
+        PN:   { code: 'PN',   cell: 'PRESENTE', hex: '#F4B183', fg: '#111827', label: 'Plantão normal 08h–18h',           when: 'wknd',    works: true,  until20: false },
+        F:    { code: 'F',    cell: 'FOLGA',    hex: '#F4B183', fg: '#111827', label: 'Folga',                            when: 'any',     works: false, until20: false }
+      };
+
+      const DEFAULT_TEAM = [
+        { id: 't1',  name: 'Glauco Oliveira dos Santos',          role: 'Atendimento' },
+        { id: 't2',  name: 'Aureliano Camargo',                   role: 'Atendimento' },
+        { id: 't3',  name: 'Tayna Lima Peçanha',                  role: 'Atendimento' },
+        { id: 't4',  name: 'Jorge Pires da Conceição',            role: 'Atendimento' },
+        { id: 't5',  name: 'Elias Manoel Nascimento',             role: 'Atendimento' },
+        { id: 't6',  name: 'Fernando Soares Mesquita',            role: 'Atendimento' },
+        { id: 't7',  name: 'Rhonis dos Santos Barbosa de Amorim', role: 'Atendimento' },
+        { id: 't8',  name: 'Lenilton Alves Duarte',               role: 'Monitoramento' },
+        { id: 't9',  name: 'Wellington Macedo Lourenço',          role: 'Monitoramento' },
+        { id: 't10', name: 'Leandro Honorio de Figueiredo',       role: 'Planilhas' },
+        { id: 't11', name: 'Paulo Enoque Casado Lima Ferreira',   role: 'Planilhas' }
+      ];
+
+      const DEFAULT_NATAL_GROUP_A = [
+        'Aureliano Camargo',
+        'Jorge Pires da Conceição',
+        'Wellington Macedo Lourenço',
+        'Elias Manoel Nascimento',
+        'Paulo Enoque Casado Lima Ferreira',
+        'Rhonis dos Santos Barbosa de Amorim'
+      ];
+      const DEFAULT_NATAL_GROUP_B = [
+        'Glauco Oliveira dos Santos',
+        'Lenilton Alves Duarte',
+        'Tayna Lima Peçanha',
+        'Fernando Soares Mesquita',
+        'Leandro Honorio de Figueiredo'
+      ];
+
+      const DEFAULT_RULES = {
+        sabadoPresentes: 8,
+        domingoTotal: 3,
+        domingoAtendimento: 2,
+        domingoMonitoramento: 1,
+        domingoPlanilhas: 0,
+        feriadoAtendimento: 3,
+        feriadoMonitoramento: 1,
+        feriadoPlanilhas: 1,
+        wkndFeriadoPI: 1,
+        diaUtilPE: 2,
+        fdsFolgaSD: 2,
+        fdsFolgaDS: 1,
+        minFolgaCasada: 1,
+        maxFolgaSD: 2,
+        proibirFolgaDiaUtil: true,
+        maxDiasSeguidos: 12,
+        paresSeparados: [
+          ['Lenilton Alves Duarte', 'Wellington Macedo Lourenço'],
+          ['Leandro Honorio de Figueiredo', 'Paulo Enoque Casado Lima Ferreira']
+        ],
+        isentarParDomingoCotaZero: true,
+        natalAtivo: true,
+        natalAnoBase: 2026,
+        natalGrupoA: [...DEFAULT_NATAL_GROUP_A],
+        natalGrupoB: [...DEFAULT_NATAL_GROUP_B]
+      };
+
+      const DOW_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+      function pad2(n) { return String(n).padStart(2, '0'); }
+      function toIso(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+      function parseIso(iso) {
+        const [y, m, d] = iso.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+      function formatBR(iso) {
+        const [y, m, d] = iso.split('-');
+        return `${d}/${m}/${y}`;
+      }
+      function formatShort(iso) {
+        const [, m, d] = iso.split('-');
+        return `${d}/${m}`;
+      }
+
+      function getEasterDate(year) {
+        const a = year % 19;
+        const b = Math.floor(year / 100);
+        const c = year % 100;
+        const d = Math.floor(b / 4);
+        const e = b % 4;
+        const f = Math.floor((b + 8) / 25);
+        const g = Math.floor((b - f + 1) / 3);
+        const h = (19 * a + b - d - g + 15) % 30;
+        const i = Math.floor(c / 4);
+        const k = c % 4;
+        const l = (32 + 2 * e + 2 * i - h - k) % 7;
+        const m = Math.floor((a + 11 * h + 22 * l) / 451);
+        const month = Math.floor((h + l - 7 * m + 114) / 31);
+        const day = ((h + l - 7 * m + 114) % 31) + 1;
+        return new Date(year, month - 1, day);
+      }
+
+      function addDays(date, days) {
+        const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        d.setDate(d.getDate() + days);
+        return d;
+      }
+
+      function getBrazilianHolidays(year) {
+        const map = {};
+        const fixed = [
+          [`${year}-01-01`, 'Confraternização Universal'],
+          [`${year}-04-21`, 'Tiradentes'],
+          [`${year}-05-01`, 'Dia do Trabalho'],
+          [`${year}-09-07`, 'Independência do Brasil'],
+          [`${year}-10-12`, 'Nossa Sra. Aparecida'],
+          [`${year}-11-02`, 'Finados'],
+          [`${year}-11-15`, 'Proclamação da República'],
+          [`${year}-11-20`, 'Consciência Negra'],
+          [`${year}-12-25`, 'Natal']
+        ];
+        fixed.forEach(([k, v]) => { map[k] = v; });
+
+        const easter = getEasterDate(year);
+        map[toIso(addDays(easter, -48))] = 'Carnaval (Segunda)';
+        map[toIso(addDays(easter, -47))] = 'Carnaval (Terça)';
+        map[toIso(addDays(easter, -2))]  = 'Sexta-feira Santa';
+        map[toIso(addDays(easter, 60))]  = 'Corpus Christi';
+        return map;
+      }
+
+      function buildPeriodDays(startYear, startMonth, customHolidays = {}) {
+        const start = new Date(startYear, startMonth - 1, 14);
+        const endMonth = startMonth === 12 ? 1 : startMonth + 1;
+        const endYear = startMonth === 12 ? startYear + 1 : startYear;
+        const end = new Date(endYear, endMonth - 1, 13);
+
+        const holMap = {
+          ...getBrazilianHolidays(startYear),
+          ...(endYear !== startYear ? getBrazilianHolidays(endYear) : {})
+        };
+
+        const days = [];
+        let cur = new Date(start);
+        while (cur <= end) {
+          const iso = toIso(cur);
+          const dow = cur.getDay();
+          const autoHolName = holMap[iso] || null;
+          let isHoliday = Boolean(autoHolName);
+          let holidayName = autoHolName || '';
+          if (Object.prototype.hasOwnProperty.call(customHolidays, iso)) {
+            isHoliday = Boolean(customHolidays[iso]);
+            holidayName = isHoliday ? (autoHolName || 'Feriado (manual)') : '';
+          }
+          const mmdd = iso.slice(5);
+          const specialBlock = getSpecialBlock(mmdd);
+          days.push({
+            iso,
+            year: cur.getFullYear(),
+            month: cur.getMonth() + 1,
+            day: cur.getDate(),
+            dow,
+            dowLabel: DOW_SHORT[dow],
+            isSat: dow === 6,
+            isSun: dow === 0,
+            isWeekend: dow === 0 || dow === 6,
+            isHoliday,
+            holidayName,
+            isOffDayType: dow === 0 || dow === 6 || isHoliday,
+            specialBlock
+          });
+          cur = addDays(cur, 1);
+        }
+        return days;
+      }
+
+      function getSpecialBlock(mmdd) {
+        if (mmdd === '12-24' || mmdd === '12-25') return 'NATAL_1';
+        if (mmdd === '12-26' || mmdd === '12-27') return 'NATAL_2';
+        if (mmdd === '12-31' || mmdd === '01-01') return 'ANO_1';
+        if (mmdd === '01-02' || mmdd === '01-03') return 'ANO_2';
+        return null;
+      }
+
+      function getSpecialDayExpectedWorkers(dayObj, rules) {
+        if (!dayObj.specialBlock || !rules.natalAtivo) return null;
+        const seasonYear = dayObj.month === 1 ? dayObj.year - 1 : dayObj.year;
+        const invert = Math.abs(seasonYear - (rules.natalAnoBase || 2026)) % 2 === 1;
+        const groupA = invert ? rules.natalGrupoB : rules.natalGrupoA;
+        const groupB = invert ? rules.natalGrupoA : rules.natalGrupoB;
+        if (dayObj.specialBlock === 'NATAL_1' || dayObj.specialBlock === 'ANO_2') {
+          return { workers: groupA, off: groupB, blockName: dayObj.specialBlock };
+        }
+        return { workers: groupB, off: groupA, blockName: dayObj.specialBlock };
+      }
+
+      function periodKey(y, m) { return `${y}-${pad2(m)}`; }
+      function periodLabel(y, m) {
+        const em = m === 12 ? 1 : m + 1;
+        const ey = m === 12 ? y + 1 : y;
+        return `14/${pad2(m)}/${y} a 13/${pad2(em)}/${ey}`;
+      }
+      function nextPeriodYM(y, m) {
+        return m === 12 ? { year: y + 1, month: 1 } : { year: y, month: m + 1 };
+      }
+
+      function normalizeName(s) {
+        return String(s || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      }
+
+      return {
+        SUPERVISOR, ROLES, SHIFTS, DEFAULT_TEAM, DEFAULT_RULES,
+        DOW_SHORT, MONTH_NAMES,
+        pad2, toIso, parseIso, formatBR, formatShort,
+        getBrazilianHolidays, buildPeriodDays, getSpecialBlock,
+        getSpecialDayExpectedWorkers, periodKey, periodLabel, nextPeriodYM, normalizeName
+      };
+    })();
+
+    /* =========================================================================
+       2. MÓDULO DE REGRAS E AUDITORIA
+       ========================================================================= */
+    const RulesEngine = (() => {
+      const RULE_NAMES = {
+        R0:  'Tipo de dia × Jornada',
+        R1:  'Regra 1 · Sábado (8 presentes)',
+        R2:  'Regra 2 · Domingo (2 Atend + 1 Mon)',
+        R3:  'Regra 3 · Feriado (3 Atend + 1 Mon + 1 Plan)',
+        R4:  'Regra 4 · Fds/Feriado (exatamente 1 até 20h)',
+        R5:  'Regra 5 · Dia útil (2 em PE até 20h)',
+        R6:  'Regra 6 · Folgas casadas (Sáb+Dom / Dom+Seg)',
+        R7:  'Regra 7 · Sem folga em dia útil',
+        R8:  'Regra 8 · Máximo de dias seguidos',
+        R9:  'Regra 9 · Pares que nunca folgam juntos',
+        R10: 'Regra 10 · Blocos de Natal e Ano Novo'
+      };
+
+      function isWorking(code) {
+        return code && code !== 'F';
+      }
+
+      function audit(period, team, rules) {
+        const days = ConfigModule.buildPeriodDays(period.year, period.month, period.customHolidays || {});
+        const grid = period.grid || {};
+        const prevStreak = period.prevStreak || {};
+        const prevLastDayOff = period.prevLastDayOff || {};
+
+        const issues = [];
+        const cellFlags = {};
+        const dayFlags = {};
+
+        function addIssue({ ruleId, severity, message, dayIso = null, techId = null }) {
+          issues.push({
+            id: `${ruleId}_${issues.length}`,
+            ruleId,
+            ruleName: RULE_NAMES[ruleId] || ruleId,
+            severity,
+            message,
+            dayIso,
+            techId
+          });
+          if (dayIso) {
+            if (!dayFlags[dayIso] || severity === 'ERRO') dayFlags[dayIso] = severity;
+          }
+          if (dayIso && techId) {
+            const k = `${techId}|${dayIso}`;
+            if (!cellFlags[k] || severity === 'ERRO') cellFlags[k] = severity;
+          }
+        }
+
+        const getCode = (techId, iso) => (grid[techId] && grid[techId][iso]) || 'PRES';
+
+        const techByNormName = {};
+        team.forEach(t => { techByNormName[ConfigModule.normalizeName(t.name)] = t; });
+
+        const activePairs = (rules.paresSeparados || []).map(([n1, n2]) => {
+          const t1 = techByNormName[ConfigModule.normalizeName(n1)];
+          const t2 = techByNormName[ConfigModule.normalizeName(n2)];
+          return (t1 && t2) ? [t1, t2] : null;
+        }).filter(Boolean);
+
+        const dayStats = {};
+        const techStats = {};
+        team.forEach(t => {
+          techStats[t.id] = {
+            tech: t,
+            counts: { PRES: 0, HO: 0, PE: 0, PI: 0, PN: 0, F: 0 },
+            satsWorked: 0,
+            sunsWorked: 0,
+            holsWorked: 0,
+            sdCount: 0,
+            dsCount: 0,
+            maxStreak: prevStreak[t.id] || 0,
+            endStreak: prevStreak[t.id] || 0
+          };
+        });
+
+        days.forEach((d) => {
+          const special = rules.natalAtivo ? ConfigModule.getSpecialDayExpectedWorkers(d, rules) : null;
+          const isSpecial = Boolean(special);
+          const present = [];
+          const off = [];
+          const byRole = { Atendimento: 0, Monitoramento: 0, Planilhas: 0 };
+          let countPI = 0, countPN = 0, countPE = 0, countHO = 0, countUntil20 = 0;
+
+          team.forEach(t => {
+            const code = getCode(t.id, d.iso);
+            const st = techStats[t.id];
+            if (st.counts[code] !== undefined) st.counts[code]++;
+
+            if (code !== 'F') {
+              if (d.isOffDayType && (code === 'PRES' || code === 'HO' || code === 'PE')) {
+                addIssue({
+                  ruleId: 'R0', severity: 'ERRO', dayIso: d.iso, techId: t.id,
+                  message: `${t.name} em ${ConfigModule.formatShort(d.iso)} (${d.isHoliday ? 'Feriado' : d.dowLabel}): código "${code}" só é permitido em dia útil; use PN, PI ou F.`
+                });
+              } else if (!d.isOffDayType && (code === 'PI' || code === 'PN')) {
+                addIssue({
+                  ruleId: 'R0', severity: 'ERRO', dayIso: d.iso, techId: t.id,
+                  message: `${t.name} em ${ConfigModule.formatShort(d.iso)} (${d.dowLabel}): código "${code}" só é permitido em sáb/dom/feriado; use PRES, HO, PE ou F.`
+                });
+              }
+            }
+
+            if (isWorking(code)) {
+              present.push({ tech: t, code });
+              if (byRole[t.role] !== undefined) byRole[t.role]++;
+              if (d.isHoliday) st.holsWorked++;
+              else if (d.isSat) st.satsWorked++;
+              else if (d.isSun) st.sunsWorked++;
+            } else {
+              off.push({ tech: t, code });
+            }
+
+            if (code === 'PI') countPI++;
+            if (code === 'PN') countPN++;
+            if (code === 'PE') countPE++;
+            if (code === 'HO') countHO++;
+            if (code === 'PI' || code === 'PE') countUntil20++;
+          });
+
+          dayStats[d.iso] = {
+            day: d, presentCount: present.length, offCount: off.length,
+            byRole, countPI, countPN, countPE, countHO, countUntil20, isSpecial
+          };
+
+          if (isSpecial) {
+            const expectedSet = new Set(special.workers.map(ConfigModule.normalizeName));
+            team.forEach(t => {
+              const code = getCode(t.id, d.iso);
+              const shouldWork = expectedSet.has(ConfigModule.normalizeName(t.name));
+              if (shouldWork && !isWorking(code)) {
+                addIssue({
+                  ruleId: 'R10', severity: 'ERRO', dayIso: d.iso, techId: t.id,
+                  message: `Natal/Ano Novo (${ConfigModule.formatShort(d.iso)}): ${t.name} deveria TRABALHAR neste bloco fixo.`
+                });
+              } else if (!shouldWork && isWorking(code)) {
+                addIssue({
+                  ruleId: 'R10', severity: 'ERRO', dayIso: d.iso, techId: t.id,
+                  message: `Natal/Ano Novo (${ConfigModule.formatShort(d.iso)}): ${t.name} deveria estar de FOLGA neste bloco fixo.`
+                });
+              }
+            });
+            if (countUntil20 !== rules.wkndFeriadoPI) {
+              addIssue({
+                ruleId: 'R4', severity: 'ERRO', dayIso: d.iso,
+                message: `Bloco Natal/Ano Novo (${ConfigModule.formatShort(d.iso)}): encontrados ${countUntil20} técnicos até 20h (meta: exatamente ${rules.wkndFeriadoPI}).`
+              });
+            }
+          } else {
+            if (d.isHoliday) {
+              const expTotal = rules.feriadoAtendimento + rules.feriadoMonitoramento + rules.feriadoPlanilhas;
+              if (
+                byRole.Atendimento !== rules.feriadoAtendimento ||
+                byRole.Monitoramento !== rules.feriadoMonitoramento ||
+                byRole.Planilhas !== rules.feriadoPlanilhas ||
+                present.length !== expTotal
+              ) {
+                addIssue({
+                  ruleId: 'R3', severity: 'ERRO', dayIso: d.iso,
+                  message: `Feriado ${ConfigModule.formatShort(d.iso)} (${d.holidayName}): ${byRole.Atendimento} Atend, ${byRole.Monitoramento} Mon, ${byRole.Planilhas} Plan (meta: ${rules.feriadoAtendimento} Atend + ${rules.feriadoMonitoramento} Mon + ${rules.feriadoPlanilhas} Plan).`
+                });
+              }
+            } else if (d.isSat) {
+              if (present.length !== rules.sabadoPresentes) {
+                addIssue({
+                  ruleId: 'R1', severity: 'ERRO', dayIso: d.iso,
+                  message: `Sábado ${ConfigModule.formatShort(d.iso)}: ${present.length} presentes (meta: exatamente ${rules.sabadoPresentes}).`
+                });
+              }
+            } else if (d.isSun) {
+              if (
+                present.length !== rules.domingoTotal ||
+                byRole.Atendimento !== rules.domingoAtendimento ||
+                byRole.Monitoramento !== rules.domingoMonitoramento ||
+                byRole.Planilhas !== rules.domingoPlanilhas
+              ) {
+                addIssue({
+                  ruleId: 'R2', severity: 'ERRO', dayIso: d.iso,
+                  message: `Domingo ${ConfigModule.formatShort(d.iso)}: ${present.length} presentes (${byRole.Atendimento} Atend, ${byRole.Monitoramento} Mon, ${byRole.Planilhas} Plan; meta: ${rules.domingoAtendimento} Atend + ${rules.domingoMonitoramento} Mon).`
+                });
+              }
+            } else {
+              if (countPE !== rules.diaUtilPE) {
+                addIssue({
+                  ruleId: 'R5', severity: 'ALERTA', dayIso: d.iso,
+                  message: `Dia útil ${ConfigModule.formatShort(d.iso)} (${d.dowLabel}): ${countPE} em PE até 20h (meta: exatamente ${rules.diaUtilPE}).`
+                });
+              }
+            }
+
+            if (d.isOffDayType) {
+              if (countPI !== rules.wkndFeriadoPI) {
+                addIssue({
+                  ruleId: 'R4', severity: 'ERRO', dayIso: d.iso,
+                  message: `${d.isHoliday ? 'Feriado' : d.dowLabel} ${ConfigModule.formatShort(d.iso)}: ${countPI} técnico(s) em PI até 20h (meta: exatamente ${rules.wkndFeriadoPI}; demais em PN).`
+                });
+              }
+            }
+          }
+
+          activePairs.forEach(([t1, t2]) => {
+            const c1 = getCode(t1.id, d.iso);
+            const c2 = getCode(t2.id, d.iso);
+            if (!isWorking(c1) && !isWorking(c2)) {
+              const bothRoleZeroOnSun = d.isSun && !d.isHoliday && !isSpecial && rules.isentarParDomingoCotaZero &&
+                t1.role === t2.role &&
+                ((t1.role === 'Planilhas' && rules.domingoPlanilhas === 0) ||
+                 (t1.role === 'Monitoramento' && rules.domingoMonitoramento === 0) ||
+                 (t1.role === 'Atendimento' && rules.domingoAtendimento === 0));
+              if (!bothRoleZeroOnSun) {
+                addIssue({
+                  ruleId: 'R9', severity: 'ERRO', dayIso: d.iso, techId: t1.id,
+                  message: `Par em folga junta em ${ConfigModule.formatShort(d.iso)}: ${t1.name} e ${t2.name} não podem folgar no mesmo dia.`
+                });
+                cellFlags[`${t2.id}|${d.iso}`] = 'ERRO';
+              }
+            }
+          });
+        });
+
+        const weekends = [];
+        const validMondayOffs = new Set();
+
+        for (let i = 0; i < days.length - 1; i++) {
+          const sat = days[i];
+          const sun = days[i + 1];
+          if (sat.isSat && sun.isSun) {
+            const mon = days[i + 2] || null;
+            const touchesSpecial = rules.natalAtivo && (
+              Boolean(sat.specialBlock) || Boolean(sun.specialBlock) || (mon && Boolean(mon.specialBlock))
+            );
+            const sdTechs = [];
+            const dsTechs = [];
+
+            team.forEach(t => {
+              const cSat = getCode(t.id, sat.iso);
+              const cSun = getCode(t.id, sun.iso);
+              const cMon = mon ? getCode(t.id, mon.iso) : null;
+
+              if (!isWorking(cSat) && !isWorking(cSun)) {
+                sdTechs.push(t);
+                techStats[t.id].sdCount++;
+              } else if (isWorking(cSat) && !isWorking(cSun) && mon && !mon.isHoliday && !isWorking(cMon)) {
+                dsTechs.push(t);
+                techStats[t.id].dsCount++;
+                validMondayOffs.add(`${t.id}|${mon.iso}`);
+              }
+            });
+
+            weekends.push({
+              satIso: sat.iso, sunIso: sun.iso, monIso: mon ? mon.iso : null,
+              touchesSpecial, sdTechs, dsTechs,
+              satPresent: dayStats[sat.iso].presentCount,
+              sunPresent: dayStats[sun.iso].presentCount,
+              sunRoles: dayStats[sun.iso].byRole,
+              satPI: dayStats[sat.iso].countPI,
+              sunPI: dayStats[sun.iso].countPI
+            });
+
+            if (!touchesSpecial) {
+              if (sdTechs.length !== rules.fdsFolgaSD) {
+                addIssue({
+                  ruleId: 'R6', severity: 'ERRO', dayIso: sat.iso,
+                  message: `Fds ${ConfigModule.formatShort(sat.iso)}–${ConfigModule.formatShort(sun.iso)}: ${sdTechs.length} folga(s) Sáb+Dom (meta: exatamente ${rules.fdsFolgaSD}).`
+                });
+              }
+              if (mon && !mon.isHoliday && dsTechs.length !== rules.fdsFolgaDS) {
+                addIssue({
+                  ruleId: 'R6', severity: 'ERRO', dayIso: mon.iso,
+                  message: `Fds ${ConfigModule.formatShort(sat.iso)}–${ConfigModule.formatShort(sun.iso)}: ${dsTechs.length} folga(s) Dom+Seg (meta: exatamente ${rules.fdsFolgaDS}).`
+                });
+              }
+            }
+          }
+        }
+
+        if (days[0] && days[0].dow === 1 && !days[0].isHoliday) {
+          team.forEach(t => {
+            if (prevLastDayOff[t.id] && !isWorking(getCode(t.id, days[0].iso))) {
+              validMondayOffs.add(`${t.id}|${days[0].iso}`);
+              techStats[t.id].dsCount++;
+            }
+          });
+        }
+
+        const nonSpecialWeekends = weekends.filter(w => !w.touchesSpecial);
+        if (nonSpecialWeekends.length >= 3) {
+          team.forEach(t => {
+            const st = techStats[t.id];
+            const totalCasadas = st.sdCount + st.dsCount;
+            if (totalCasadas < rules.minFolgaCasada) {
+              addIssue({
+                ruleId: 'R6', severity: 'ERRO', techId: t.id,
+                message: `${t.name}: possui ${totalCasadas} folga(s) casada(s) no período (mínimo: ${rules.minFolgaCasada}).`
+              });
+            }
+            if (st.sdCount > rules.maxFolgaSD) {
+              addIssue({
+                ruleId: 'R6', severity: 'ERRO', techId: t.id,
+                message: `${t.name}: possui ${st.sdCount} folgas Sáb+Dom no período (máximo: ${rules.maxFolgaSD}).`
+              });
+            }
+          });
+        }
+
+        if (rules.proibirFolgaDiaUtil) {
+          days.forEach(d => {
+            if (d.isOffDayType) return;
+            if (rules.natalAtivo && d.specialBlock) return;
+            team.forEach(t => {
+              const code = getCode(t.id, d.iso);
+              if (!isWorking(code) && !validMondayOffs.has(`${t.id}|${d.iso}`)) {
+                addIssue({
+                  ruleId: 'R7', severity: 'ERRO', dayIso: d.iso, techId: t.id,
+                  message: `${t.name} de FOLGA em dia útil (${d.dowLabel} ${ConfigModule.formatShort(d.iso)}) fora de folga casada Dom+Seg.`
+                });
+              }
+            });
+          });
+        }
+
+        let globalMaxStreak = 0;
+        let globalMaxStreakTech = null;
+        team.forEach(t => {
+          let streak = Number(prevStreak[t.id]) || 0;
+          let maxS = streak;
+          days.forEach(d => {
+            const code = getCode(t.id, d.iso);
+            if (isWorking(code)) {
+              streak++;
+              if (streak > maxS) maxS = streak;
+              if (streak > rules.maxDiasSeguidos) {
+                addIssue({
+                  ruleId: 'R8', severity: 'ERRO', dayIso: d.iso, techId: t.id,
+                  message: `${t.name} atingiu ${streak} dias trabalhados seguidos em ${ConfigModule.formatShort(d.iso)} (máximo: ${rules.maxDiasSeguidos}).`
+                });
+              }
+            } else {
+              streak = 0;
+            }
+          });
+          techStats[t.id].maxStreak = maxS;
+          techStats[t.id].endStreak = streak;
+          if (maxS > globalMaxStreak) {
+            globalMaxStreak = maxS;
+            globalMaxStreakTech = t.name;
+          }
+        });
+
+        const errors = issues.filter(i => i.severity === 'ERRO');
+        const warnings = issues.filter(i => i.severity === 'ALERTA');
+
+        let satTotal = 0, satOk = 0, sunTotal = 0, sunOk = 0;
+        days.forEach(d => {
+          const isSpec = rules.natalAtivo && Boolean(d.specialBlock);
+          if (isSpec || d.isHoliday) return;
+          if (d.isSat) {
+            satTotal++;
+            if (dayStats[d.iso].presentCount === rules.sabadoPresentes && dayStats[d.iso].countPI === rules.wkndFeriadoPI) satOk++;
+          } else if (d.isSun) {
+            sunTotal++;
+            const ds = dayStats[d.iso];
+            if (
+              ds.presentCount === rules.domingoTotal &&
+              ds.byRole.Atendimento === rules.domingoAtendimento &&
+              ds.byRole.Monitoramento === rules.domingoMonitoramento &&
+              ds.byRole.Planilhas === rules.domingoPlanilhas &&
+              ds.countPI === rules.wkndFeriadoPI
+            ) sunOk++;
+          }
+        });
+
+        const totalChecks = Math.max(1, days.length * 4 + team.length * 2);
+        const penalty = errors.length * 2 + warnings.length * 0.5;
+        const compliance = Math.max(0, Math.min(100, Math.round(((totalChecks - penalty) / totalChecks) * 100)));
+
+        return {
+          days, issues, errors, warnings, cellFlags, dayFlags,
+          dayStats, techStats, weekends,
+          summary: {
+            compliance,
+            errorCount: errors.length,
+            warningCount: warnings.length,
+            satOk, satTotal, sunOk, sunTotal,
+            globalMaxStreak, globalMaxStreakTech
+          }
+        };
+      }
+
+      return { RULE_NAMES, audit, isWorking };
+    })();
+
+    /* =========================================================================
+       3. MÓDULO DE GERAÇÃO AUTOMÁTICA E OTIMIZAÇÃO
+       ========================================================================= */
+    const AutoScheduler = (() => {
+      function cloneGrid(grid) {
+        const out = {};
+        for (const k of Object.keys(grid)) out[k] = { ...grid[k] };
+        return out;
+      }
+
+      function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function buildCandidate(period, team, rules, attemptSeed = 0) {
+        const days = ConfigModule.buildPeriodDays(period.year, period.month, period.customHolidays || {});
+        const grid = {};
+        team.forEach(t => { grid[t.id] = {}; });
+
+        const prevStreak = period.prevStreak || {};
+        const techByRole = { Atendimento: [], Monitoramento: [], Planilhas: [] };
+        team.forEach(t => { if (techByRole[t.role]) techByRole[t.role].push(t); });
+
+        const normMap = {};
+        team.forEach(t => { normMap[ConfigModule.normalizeName(t.name)] = t.id; });
+        const pairIds = (rules.paresSeparados || [])
+          .map(([a, b]) => [normMap[ConfigModule.normalizeName(a)], normMap[ConfigModule.normalizeName(b)]])
+          .filter(([a, b]) => a && b);
+
+        function conflictsWithPair(techId, offSet) {
+          for (const [a, b] of pairIds) {
+            if (a === techId && offSet.has(b)) return true;
+            if (b === techId && offSet.has(a)) return true;
+          }
+          return false;
+        }
+
+        days.forEach(d => {
+          team.forEach(t => {
+            grid[t.id][d.iso] = d.isOffDayType ? 'PN' : 'PRES';
+          });
+        });
+
+        const specialDays = new Set();
+        if (rules.natalAtivo) {
+          days.forEach(d => {
+            const spec = ConfigModule.getSpecialDayExpectedWorkers(d, rules);
+            if (!spec) return;
+            specialDays.add(d.iso);
+            const workSet = new Set(spec.workers.map(ConfigModule.normalizeName));
+            const workersToday = [];
+            team.forEach(t => {
+              if (workSet.has(ConfigModule.normalizeName(t.name))) {
+                grid[t.id][d.iso] = d.isOffDayType ? 'PN' : 'PRES';
+                workersToday.push(t);
+              } else {
+                grid[t.id][d.iso] = 'F';
+              }
+            });
+            if (workersToday.length > 0) {
+              const piTech = workersToday[attemptSeed % workersToday.length];
+              grid[piTech.id][d.iso] = d.isOffDayType ? 'PI' : 'PE';
+            }
+          });
+        }
+
+        const sdUsed = {}, dsUsed = {}, satWorked = {}, sunWorked = {}, piCount = {}, peCount = {};
+        team.forEach(t => {
+          sdUsed[t.id] = 0; dsUsed[t.id] = 0;
+          satWorked[t.id] = 0; sunWorked[t.id] = 0;
+          piCount[t.id] = 0; peCount[t.id] = 0;
+        });
+
+        function streakBefore(techId, dayIdx) {
+          let s = Number(prevStreak[techId]) || 0;
+          for (let k = 0; k < dayIdx; k++) {
+            const code = grid[techId][days[k].iso];
+            s = code !== 'F' ? s + 1 : 0;
+          }
+          return s;
+        }
+
+        for (let i = 0; i < days.length; i++) {
+          const d = days[i];
+          if (specialDays.has(d.iso)) continue;
+
+          if (d.isSat && i + 1 < days.length && days[i + 1].isSun && !specialDays.has(days[i + 1].iso)) {
+            const sat = d;
+            const sun = days[i + 1];
+            const mon = (i + 2 < days.length && !days[i + 2].isHoliday && !specialDays.has(days[i + 2].iso)) ? days[i + 2] : null;
+
+            const satOffCount = Math.max(0, team.length - rules.sabadoPresentes);
+            const satOffSet = new Set();
+            const sunWorkSet = new Set();
+
+            const scoredForSD = shuffle(team).sort((a, b) => {
+              const ca = sdUsed[a.id] + dsUsed[a.id];
+              const cb = sdUsed[b.id] + dsUsed[b.id];
+              if (sdUsed[a.id] >= rules.maxFolgaSD && sdUsed[b.id] < rules.maxFolgaSD) return 1;
+              if (sdUsed[b.id] >= rules.maxFolgaSD && sdUsed[a.id] < rules.maxFolgaSD) return -1;
+              if ((ca === 0) !== (cb === 0)) return ca === 0 ? -1 : 1;
+              const stA = streakBefore(a.id, i);
+              const stB = streakBefore(b.id, i);
+              const urgA = stA >= (rules.maxDiasSeguidos - 2) ? -100 : 0;
+              const urgB = stB >= (rules.maxDiasSeguidos - 2) ? -100 : 0;
+              if (urgA !== urgB) return urgA - urgB;
+              if (ca !== cb) return ca - cb;
+              return stB - stA;
+            });
+
+            const sdChosen = [];
+            for (const t of scoredForSD) {
+              if (sdChosen.length >= rules.fdsFolgaSD) break;
+              if (sdUsed[t.id] >= rules.maxFolgaSD) continue;
+              if (conflictsWithPair(t.id, satOffSet)) continue;
+              sdChosen.push(t);
+              satOffSet.add(t.id);
+              sdUsed[t.id]++;
+            }
+
+            const extraSatOff = [];
+            const needExtraSatOff = satOffCount - sdChosen.length;
+            const eligibleSatOnly = shuffle(team.filter(t => !satOffSet.has(t.id) && (t.role === 'Atendimento' || t.role === 'Monitoramento')))
+              .sort((a, b) => {
+                const stA = streakBefore(a.id, i);
+                const stB = streakBefore(b.id, i);
+                if (stA >= rules.maxDiasSeguidos - 2 && stB < rules.maxDiasSeguidos - 2) return -1;
+                if (stB >= rules.maxDiasSeguidos - 2 && stA < rules.maxDiasSeguidos - 2) return 1;
+                return sunWorked[a.id] - sunWorked[b.id];
+              });
+
+            for (const t of eligibleSatOnly) {
+              if (extraSatOff.length >= needExtraSatOff) break;
+              if (conflictsWithPair(t.id, satOffSet)) continue;
+              extraSatOff.push(t);
+              satOffSet.add(t.id);
+              sunWorkSet.add(t.id);
+            }
+
+            const roleTargets = sun.isHoliday ? {
+              Atendimento: rules.feriadoAtendimento,
+              Monitoramento: rules.feriadoMonitoramento,
+              Planilhas: rules.feriadoPlanilhas
+            } : {
+              Atendimento: rules.domingoAtendimento,
+              Monitoramento: rules.domingoMonitoramento,
+              Planilhas: rules.domingoPlanilhas
+            };
+            const roleCur = { Atendimento: 0, Monitoramento: 0, Planilhas: 0 };
+            extraSatOff.forEach(t => { roleCur[t.role]++; });
+
+            ['Monitoramento', 'Planilhas', 'Atendimento'].forEach(role => {
+              const need = roleTargets[role] - roleCur[role];
+              if (need <= 0) return;
+              const candidates = shuffle(techByRole[role].filter(t => !satOffSet.has(t.id) && !sunWorkSet.has(t.id)))
+                .sort((a, b) => {
+                  const stA = streakBefore(a.id, i);
+                  const stB = streakBefore(b.id, i);
+                  const safeA = stA + 7 <= rules.maxDiasSeguidos ? 0 : 1;
+                  const safeB = stB + 7 <= rules.maxDiasSeguidos ? 0 : 1;
+                  if (safeA !== safeB) return safeA - safeB;
+                  return sunWorked[a.id] - sunWorked[b.id];
+                });
+              for (const c of candidates) {
+                if (roleCur[role] >= roleTargets[role]) break;
+                sunWorkSet.add(c.id);
+                roleCur[role]++;
+              }
+            });
+
+            const satWorkers = [];
+            const sunWorkers = [];
+            team.forEach(t => {
+              if (satOffSet.has(t.id)) {
+                grid[t.id][sat.iso] = 'F';
+              } else {
+                grid[t.id][sat.iso] = 'PN';
+                satWorkers.push(t);
+                satWorked[t.id]++;
+              }
+
+              if (sunWorkSet.has(t.id)) {
+                grid[t.id][sun.iso] = 'PN';
+                sunWorkers.push(t);
+                sunWorked[t.id]++;
+              } else {
+                grid[t.id][sun.iso] = 'F';
+              }
+            });
+
+            if (satWorkers.length > 0) {
+              satWorkers.sort((a, b) => piCount[a.id] - piCount[b.id]);
+              grid[satWorkers[0].id][sat.iso] = 'PI';
+              piCount[satWorkers[0].id]++;
+            }
+            if (sunWorkers.length > 0) {
+              sunWorkers.sort((a, b) => piCount[a.id] - piCount[b.id]);
+              grid[sunWorkers[0].id][sun.iso] = 'PI';
+              piCount[sunWorkers[0].id]++;
+            }
+
+            if (mon && rules.fdsFolgaDS > 0) {
+              const dsCandidates = shuffle(team.filter(t => !satOffSet.has(t.id) && !sunWorkSet.has(t.id)))
+                .sort((a, b) => {
+                  const ca = sdUsed[a.id] + dsUsed[a.id];
+                  const cb = sdUsed[b.id] + dsUsed[b.id];
+                  if (ca !== cb) return ca - cb;
+                  return dsUsed[a.id] - dsUsed[b.id];
+                });
+              const monOffSet = new Set();
+              let picked = 0;
+              for (const t of dsCandidates) {
+                if (picked >= rules.fdsFolgaDS) break;
+                if (conflictsWithPair(t.id, monOffSet)) continue;
+                grid[t.id][mon.iso] = 'F';
+                monOffSet.add(t.id);
+                dsUsed[t.id]++;
+                picked++;
+              }
+            }
+
+            i++;
+          } else if (d.isHoliday) {
+            const holWorkers = [];
+            const roleTargets = {
+              Atendimento: rules.feriadoAtendimento,
+              Monitoramento: rules.feriadoMonitoramento,
+              Planilhas: rules.feriadoPlanilhas
+            };
+            ['Monitoramento', 'Planilhas', 'Atendimento'].forEach(role => {
+              const cands = shuffle(techByRole[role]).sort((a, b) => streakBefore(a.id, i) - streakBefore(b.id, i));
+              cands.forEach((t, idx) => {
+                if (idx < roleTargets[role]) {
+                  grid[t.id][d.iso] = 'PN';
+                  holWorkers.push(t);
+                } else {
+                  grid[t.id][d.iso] = 'F';
+                }
+              });
+            });
+            if (holWorkers.length > 0) {
+              holWorkers.sort((a, b) => piCount[a.id] - piCount[b.id]);
+              grid[holWorkers[0].id][d.iso] = 'PI';
+              piCount[holWorkers[0].id]++;
+            }
+          } else if (d.isSat) {
+            const offCount = Math.max(0, team.length - rules.sabadoPresentes);
+            const offSet = new Set();
+            const cands = shuffle(team).sort((a, b) => streakBefore(b.id, i) - streakBefore(a.id, i));
+            for (const t of cands) {
+              if (offSet.size >= offCount) break;
+              if (conflictsWithPair(t.id, offSet)) continue;
+              offSet.add(t.id);
+            }
+            const workers = [];
+            team.forEach(t => {
+              if (offSet.has(t.id)) grid[t.id][d.iso] = 'F';
+              else { grid[t.id][d.iso] = 'PN'; workers.push(t); }
+            });
+            if (workers.length > 0) {
+              workers.sort((a, b) => piCount[a.id] - piCount[b.id]);
+              grid[workers[0].id][d.iso] = 'PI';
+              piCount[workers[0].id]++;
+            }
+          } else if (d.isSun) {
+            const workers = [];
+            const roleTargets = {
+              Atendimento: rules.domingoAtendimento,
+              Monitoramento: rules.domingoMonitoramento,
+              Planilhas: rules.domingoPlanilhas
+            };
+            ['Monitoramento', 'Atendimento', 'Planilhas'].forEach(role => {
+              const cands = shuffle(techByRole[role]).sort((a, b) => (prevStreak[a.id] || 0) - (prevStreak[b.id] || 0));
+              cands.forEach((t, idx) => {
+                if (idx < roleTargets[role]) {
+                  grid[t.id][d.iso] = 'PN';
+                  workers.push(t);
+                } else {
+                  grid[t.id][d.iso] = 'F';
+                }
+              });
+            });
+            if (workers.length > 0) {
+              workers.sort((a, b) => piCount[a.id] - piCount[b.id]);
+              grid[workers[0].id][d.iso] = 'PI';
+              piCount[workers[0].id]++;
+            }
+          }
+        }
+
+        days.forEach((d, idx) => {
+          if (d.isOffDayType || specialDays.has(d.iso)) return;
+          const active = team.filter(t => grid[t.id][d.iso] !== 'F');
+          const peSorted = shuffle(active).sort((a, b) => peCount[a.id] - peCount[b.id]);
+          const peSet = new Set(peSorted.slice(0, rules.diaUtilPE).map(t => t.id));
+          active.forEach((t, k) => {
+            if (peSet.has(t.id)) {
+              grid[t.id][d.iso] = 'PE';
+              peCount[t.id]++;
+            } else {
+              grid[t.id][d.iso] = ((idx + k) % 5 < 2) ? 'HO' : 'PRES';
+            }
+          });
+        });
+
+        return grid;
+      }
+
+      function scoreGrid(period, grid, team, rules) {
+        const res = RulesEngine.audit({ ...period, grid }, team, rules);
+        const sats = Object.values(res.techStats).map(s => s.satsWorked);
+        const pis = Object.values(res.techStats).map(s => s.counts.PI);
+        const spreadSat = Math.max(...sats) - Math.min(...sats);
+        const spreadPI = Math.max(...pis) - Math.min(...pis);
+        return res.errors.length * 1000 + res.warnings.length * 50 + spreadSat * 2 + spreadPI;
+      }
+
+      async function generateOptimized(period, team, rules, onProgress) {
+        const totalAttempts = 80;
+        let bestGrid = null;
+        let bestScore = Infinity;
+
+        for (let i = 0; i < totalAttempts; i++) {
+          const cand = buildCandidate(period, team, rules, i);
+          const sc = scoreGrid(period, cand, team, rules);
+          if (sc < bestScore) {
+            bestScore = sc;
+            bestGrid = cand;
+          }
+          if (onProgress) {
+            const pct = Math.round(((i + 1) / totalAttempts) * 100);
+            const errs = Math.floor(bestScore / 1000);
+            onProgress(pct, `Avaliando combinação ${i + 1}/${totalAttempts} · melhor: ${errs} erro(s)`);
+          }
+          if (bestScore < 5) break;
+          if (i % 5 === 4) await new Promise(r => setTimeout(r, 10));
+        }
+
+        if (onProgress) onProgress(100, 'Concluído!');
+        return bestGrid;
+      }
+
+      function generateQuickSync(period, team, rules) {
+        let bestGrid = null;
+        let bestScore = Infinity;
+        for (let i = 0; i < 40; i++) {
+          const cand = buildCandidate(period, team, rules, i);
+          const sc = scoreGrid(period, cand, team, rules);
+          if (sc < bestScore) {
+            bestScore = sc;
+            bestGrid = cand;
+          }
+          if (bestScore < 10) break;
+        }
+        return bestGrid;
+      }
+
+      return { generateOptimized, generateQuickSync, cloneGrid };
+    })();
+
+    /* =========================================================================
+       4. MÓDULO DE IMPORTAÇÃO / EXPORTAÇÃO (ExcelJS + Google Sheets)
+       ========================================================================= */
+    const ExcelIO = (() => {
+      function argbFromHex(hex) {
+        return 'FF' + hex.replace('#', '').toUpperCase();
+      }
+
+      async function exportXlsx(period, team, auditRes) {
+        if (typeof window.ExcelJS === 'undefined') {
+          throw new Error('Biblioteca ExcelJS não carregou. Verifique sua conexão com a internet.');
+        }
+        const wb = new window.ExcelJS.Workbook();
+        wb.creator = 'Escala GPON';
+        wb.created = new Date();
+
+        const days = auditRes.days;
+        const label = ConfigModule.periodLabel(period.year, period.month);
+
+        const ws = wb.addWorksheet('ESCALA', { views: [{ state: 'frozen', xSplit: 2, ySplit: 3 }] });
+        const totalCols = 2 + days.length;
+
+        ws.mergeCells(1, 1, 1, totalCols);
+        const titleCell = ws.getCell(1, 1);
+        titleCell.value = `ESCALA GPON · ${label}   |   Supervisor: ${ConfigModule.SUPERVISOR}`;
+        titleCell.font = { bold: true, size: 13, color: { argb: 'FFFFFFFF' } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+        titleCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+        ws.getRow(1).height = 28;
+
+        ws.getCell(2, 1).value = 'Colaborador';
+        ws.getCell(2, 2).value = 'Função';
+        ws.mergeCells(2, 1, 3, 1);
+        ws.mergeCells(2, 2, 3, 2);
+
+        days.forEach((d, idx) => {
+          const col = 3 + idx;
+          const cDow = ws.getCell(2, col);
+          const cDay = ws.getCell(3, col);
+          cDow.value = d.isHoliday ? `${d.dowLabel} (FER)` : d.dowLabel;
+          cDay.value = ConfigModule.formatShort(d.iso);
+          const bg = d.isHoliday ? 'FFFEE2E2' : (d.isWeekend ? 'FFE0E7FF' : 'FFF1F5F9');
+          [cDow, cDay].forEach(c => {
+            c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+            c.font = { bold: true, size: 10, color: { argb: d.isHoliday ? 'FF991B1B' : 'FF0F172A' } };
+            c.alignment = { horizontal: 'center', vertical: 'middle' };
+            c.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+          });
+        });
+
+        [ws.getCell(2, 1), ws.getCell(2, 2)].forEach(c => {
+          c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+          c.font = { bold: true, size: 10 };
+          c.alignment = { horizontal: 'center', vertical: 'middle' };
+          c.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+        });
+
+        team.forEach((t, rIdx) => {
+          const rowNum = 4 + rIdx;
+          const row = ws.getRow(rowNum);
+          row.height = 22;
+          const cName = ws.getCell(rowNum, 1);
+          const cRole = ws.getCell(rowNum, 2);
+          cName.value = t.name;
+          cRole.value = t.role;
+          cName.font = { bold: true, size: 10 };
+          cRole.font = { size: 10, color: { argb: 'FF475569' } };
+          [cName, cRole].forEach(c => {
+            c.alignment = { vertical: 'middle', horizontal: 'left' };
+            c.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+          });
+
+          days.forEach((d, dIdx) => {
+            const code = (period.grid[t.id] && period.grid[t.id][d.iso]) || 'PRES';
+            const sh = ConfigModule.SHIFTS[code] || ConfigModule.SHIFTS.PRES;
+            const cell = ws.getCell(rowNum, 3 + dIdx);
+            cell.value = sh.cell;
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: argbFromHex(sh.hex) } };
+            cell.font = { bold: true, size: 10, color: { argb: argbFromHex(sh.fg) } };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+          });
+        });
+
+        const totStart = 4 + team.length + 1;
+        const totDefs = [
+          { label: 'Técnicos trabalhando', fn: d => auditRes.dayStats[d.iso].presentCount },
+          { label: 'Até 20h (PE / PI)',    fn: d => auditRes.dayStats[d.iso].countUntil20 },
+          { label: 'Home office (HO)',     fn: d => auditRes.dayStats[d.iso].countHO },
+          { label: 'De folga (F)',         fn: d => auditRes.dayStats[d.iso].offCount }
+        ];
+        totDefs.forEach((td, i) => {
+          const r = totStart + i;
+          ws.mergeCells(r, 1, r, 2);
+          const lbl = ws.getCell(r, 1);
+          lbl.value = td.label;
+          lbl.font = { bold: true, size: 10 };
+          lbl.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+          lbl.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+          days.forEach((d, dIdx) => {
+            const c = ws.getCell(r, 3 + dIdx);
+            c.value = td.fn(d);
+            c.font = { bold: true, size: 10 };
+            c.alignment = { horizontal: 'center', vertical: 'middle' };
+            c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+            c.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+          });
+        });
+
+        const legStart = totStart + totDefs.length + 2;
+        ws.getCell(legStart, 1).value = 'LEGENDA DAS JORNADAS';
+        ws.getCell(legStart, 1).font = { bold: true, size: 11 };
+        Object.values(ConfigModule.SHIFTS).forEach((sh, idx) => {
+          const r = legStart + 1 + idx;
+          const c1 = ws.getCell(r, 1);
+          c1.value = `${sh.code} (${sh.cell})`;
+          c1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: argbFromHex(sh.hex) } };
+          c1.font = { bold: true, size: 10, color: { argb: argbFromHex(sh.fg) } };
+          c1.alignment = { horizontal: 'center', vertical: 'middle' };
+          ws.mergeCells(r, 2, r, 6);
+          ws.getCell(r, 2).value = `${sh.label} · ${sh.hex}`;
+        });
+
+        ws.getColumn(1).width = 36;
+        ws.getColumn(2).width = 16;
+        for (let c = 3; c <= totalCols; c++) ws.getColumn(c).width = 11;
+
+        const wsRes = wb.addWorksheet('RESUMO');
+        wsRes.addRow(['Colaborador', 'Função', 'PRES', 'HO', 'PE', 'PI', 'PN', 'FOLGA', 'Sábados', 'Domingos', 'Feriados', 'Folga Sáb+Dom', 'Folga Dom+Seg', 'Maior Seq.']);
+        wsRes.getRow(1).font = { bold: true };
+        team.forEach(t => {
+          const st = auditRes.techStats[t.id];
+          wsRes.addRow([
+            t.name, t.role,
+            st.counts.PRES, st.counts.HO, st.counts.PE, st.counts.PI, st.counts.PN, st.counts.F,
+            st.satsWorked, st.sunsWorked, st.holsWorked, st.sdCount, st.dsCount, st.maxStreak
+          ]);
+        });
+        wsRes.columns.forEach((col, i) => { col.width = i === 0 ? 36 : (i === 1 ? 16 : 13); });
+
+        const wsPl = wb.addWorksheet('PLANTÕES');
+        wsPl.addRow(['Data', 'Dia', 'Tipo', 'Presentes', 'Até 20h (PI/PE)', 'Quem está até 20h', 'Escalados (Presentes)']);
+        wsPl.getRow(1).font = { bold: true };
+        days.forEach(d => {
+          const workers = [];
+          const until20 = [];
+          team.forEach(t => {
+            const code = (period.grid[t.id] && period.grid[t.id][d.iso]) || 'PRES';
+            if (code !== 'F') workers.push(`${t.name} (${code})`);
+            if (code === 'PI' || code === 'PE') until20.push(t.name);
+          });
+          wsPl.addRow([
+            ConfigModule.formatBR(d.iso),
+            d.dowLabel,
+            d.isHoliday ? `Feriado (${d.holidayName})` : (d.isWeekend ? 'Fim de semana' : 'Dia útil'),
+            workers.length,
+            until20.length,
+            until20.join(', '),
+            workers.join(', ')
+          ]);
+        });
+        wsPl.getColumn(1).width = 13;
+        wsPl.getColumn(2).width = 8;
+        wsPl.getColumn(3).width = 22;
+        wsPl.getColumn(4).width = 11;
+        wsPl.getColumn(5).width = 15;
+        wsPl.getColumn(6).width = 38;
+        wsPl.getColumn(7).width = 80;
+
+        const buffer = await wb.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Escala_GPON_${period.year}-${ConfigModule.pad2(period.month)}.xlsx`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      function extractHex(cell) {
+        const fill = cell.fill;
+        if (!fill || fill.type !== 'pattern' || !fill.fgColor) return '';
+        const argb = fill.fgColor.argb || '';
+        if (argb.length === 8) return '#' + argb.slice(2).toUpperCase();
+        if (argb.length === 6) return '#' + argb.toUpperCase();
+        return '';
+      }
+
+      function hexDistance(h1, h2) {
+        if (!h1 || !h2 || h1.length !== 7 || h2.length !== 7) return 9999;
+        const r1 = parseInt(h1.slice(1, 3), 16), g1 = parseInt(h1.slice(3, 5), 16), b1 = parseInt(h1.slice(5, 7), 16);
+        const r2 = parseInt(h2.slice(1, 3), 16), g2 = parseInt(h2.slice(3, 5), 16), b2 = parseInt(h2.slice(5, 7), 16);
+        return Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
+      }
+
+      function mapCellToShiftCode(text, hex, isOffDayType) {
+        const txt = String(text || '').trim().toUpperCase();
+        if (txt === 'FOLGA' || txt === 'F') return 'F';
+        if (txt === 'PRES' || txt === 'HO' || txt === 'PE' || txt === 'PI' || txt === 'PN') return txt;
+
+        const dBlue   = hexDistance(hex, '#4472C4');
+        const dGreen  = hexDistance(hex, '#92D050');
+        const dYellow = hexDistance(hex, '#FFD966');
+        const dOrange = hexDistance(hex, '#F4B183');
+        const minD = Math.min(dBlue, dGreen, dYellow, dOrange);
+
+        if (txt === 'PRESENTE' || isOffDayType) {
+          if (minD === dYellow && dYellow < 120) return 'PI';
+          return 'PN';
+        }
+        if (minD < 120) {
+          if (minD === dGreen) return 'HO';
+          if (minD === dYellow) return 'PE';
+          if (minD === dBlue) return 'PRES';
+          if (minD === dOrange) return 'F';
+        }
+        return 'PRES';
+      }
+
+      async function importXlsx(file, period, team) {
+        if (typeof window.ExcelJS === 'undefined') {
+          throw new Error('Biblioteca ExcelJS não carregou. Verifique sua conexão.');
+        }
+        const buf = await file.arrayBuffer();
+        const wb = new window.ExcelJS.Workbook();
+        await wb.xlsx.load(buf);
+        const ws = wb.getWorksheet('ESCALA') || wb.worksheets[0];
+        if (!ws) throw new Error('Nenhuma aba encontrada na planilha.');
+
+        const days = ConfigModule.buildPeriodDays(period.year, period.month, period.customHolidays || {});
+        const dayByShort = {};
+        days.forEach(d => { dayByShort[ConfigModule.formatShort(d.iso)] = d; });
+
+        const colToDay = {};
+        let headerRowIdx = -1;
+        for (let r = 1; r <= Math.min(10, ws.rowCount); r++) {
+          const row = ws.getRow(r);
+          let found = 0;
+          row.eachCell((cell, colNum) => {
+            const val = cell.value;
+            let shortKey = '';
+            if (val instanceof Date) {
+              shortKey = `${ConfigModule.pad2(val.getDate())}/${ConfigModule.pad2(val.getMonth() + 1)}`;
+            } else {
+              const m = String(val || '').match(/(\d{1,2})\/(\d{1,2})/);
+              if (m) shortKey = `${ConfigModule.pad2(m[1])}/${ConfigModule.pad2(m[2])}`;
+            }
+            if (shortKey && dayByShort[shortKey]) {
+              colToDay[colNum] = dayByShort[shortKey];
+              found++;
+            }
+          });
+          if (found >= 5) { headerRowIdx = r; break; }
+        }
+        if (headerRowIdx === -1) {
+          throw new Error('Não foi possível localizar as datas do período atual (dd/mm) no cabeçalho da planilha.');
+        }
+
+        const techByNorm = {};
+        team.forEach(t => { techByNorm[ConfigModule.normalizeName(t.name)] = t; });
+
+        const newGrid = AutoScheduler.cloneGrid(period.grid);
+        let importedTechs = 0;
+        let importedCells = 0;
+
+        for (let r = headerRowIdx + 1; r <= ws.rowCount; r++) {
+          const row = ws.getRow(r);
+          const rawName = String(row.getCell(1).value || '').trim();
+          const norm = ConfigModule.normalizeName(rawName);
+          if (!norm) continue;
+          let tech = techByNorm[norm];
+          if (!tech) {
+            tech = team.find(t => ConfigModule.normalizeName(t.name).includes(norm) || norm.includes(ConfigModule.normalizeName(t.name)));
+          }
+          if (!tech) continue;
+          importedTechs++;
+          for (const [colStr, dayObj] of Object.entries(colToDay)) {
+            const cell = row.getCell(Number(colStr));
+            const txt = typeof cell.value === 'object' && cell.value && cell.value.richText
+              ? cell.value.richText.map(rt => rt.text).join('')
+              : cell.value;
+            const hex = extractHex(cell);
+            newGrid[tech.id][dayObj.iso] = mapCellToShiftCode(txt, hex, dayObj.isOffDayType);
+            importedCells++;
+          }
+        }
+
+        if (importedTechs === 0) {
+          throw new Error('Nenhum técnico da equipe foi encontrado na coluna A da planilha.');
+        }
+        return { grid: newGrid, importedTechs, importedCells };
+      }
+
+      async function copyToGoogleSheets(period, team, auditRes) {
+        const days = auditRes.days;
+        const tsvRows = [];
+        tsvRows.push(['Colaborador', 'Função', ...days.map(d => `${d.dowLabel} ${ConfigModule.formatShort(d.iso)}`)].join('\t'));
+        let html = '<table><thead><tr><th>Colaborador</th><th>Função</th>';
+        days.forEach(d => {
+          html += `<th style="background:${d.isHoliday ? '#fee2e2' : (d.isWeekend ? '#e0e7ff' : '#f1f5f9')};font-weight:bold;">${d.dowLabel} ${ConfigModule.formatShort(d.iso)}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+
+        team.forEach(t => {
+          const vals = [t.name, t.role];
+          html += `<tr><td>${t.name}</td><td>${t.role}</td>`;
+          days.forEach(d => {
+            const code = (period.grid[t.id] && period.grid[t.id][d.iso]) || 'PRES';
+            const sh = ConfigModule.SHIFTS[code] || ConfigModule.SHIFTS.PRES;
+            vals.push(sh.cell);
+            html += `<td style="background:${sh.hex};color:${sh.fg};font-weight:bold;text-align:center;">${sh.cell}</td>`;
+          });
+          tsvRows.push(vals.join('\t'));
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+        const plain = tsvRows.join('\n');
+
+        if (navigator.clipboard && window.ClipboardItem) {
+          try {
+            await navigator.clipboard.write([
+              new window.ClipboardItem({
+                'text/html': new Blob([html], { type: 'text/html' }),
+                'text/plain': new Blob([plain], { type: 'text/plain' })
+              })
+            ]);
+            return;
+          } catch (_) { /* fallback */ }
+        }
+        await navigator.clipboard.writeText(plain);
+      }
+
+      return { exportXlsx, importXlsx, copyToGoogleSheets };
+    })();
+
+    /* =========================================================================
+       5. MÓDULO DO ASSISTENTE IA (GEMINI + FUNCTION CALLING + AUTO-FALLBACK)
+       ========================================================================= */
+    const GeminiAssistant = (() => {
+      const FALLBACK_MODELS = [
+        'gemini-2.5-flash',
+        'gemini-2.5-pro',
+        'gemini-2.0-flash',
+        'gemini-2.0-flash-lite'
+      ];
+
+      async function fetchModels(apiKey) {
+        if (!apiKey) return [...FALLBACK_MODELS];
+        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`;
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status} ao listar modelos.`);
+        const data = await resp.json();
+        const models = (data.models || [])
+          .filter(m => (m.supportedGenerationMethods || []).includes('generateContent') && /gemini/i.test(m.name))
+          .map(m => m.name.replace(/^models\//, ''))
+          .filter(n => !/embedding|vision|aqa|tts|image/i.test(n));
+        return models.length ? models : [...FALLBACK_MODELS];
+      }
+
+      function buildContextPrompt(period, team, rules, auditRes) {
+        const label = ConfigModule.periodLabel(period.year, period.month);
+        const daysHeader = auditRes.days.map(d =>
+          `${d.iso}(${d.dowLabel}${d.isHoliday ? '/FER' : ''}${d.specialBlock ? '/' + d.specialBlock : ''})`
+        ).join(', ');
+
+        const gridLines = team.map(t => {
+          const cells = auditRes.days.map(d => `${d.iso.slice(5)}:${period.grid[t.id][d.iso]}`).join(' ');
+          return `- ${t.name} [${t.role}] (seqAnterior=${period.prevStreak?.[t.id] || 0}): ${cells}`;
+        }).join('\n');
+
+        const errLines = auditRes.issues.length
+          ? auditRes.issues.map(i => `[${i.severity}] (${i.ruleName}) ${i.message}`).join('\n')
+          : 'Nenhum erro ou alerta encontrado.';
+
+        return `Você é um especialista sênior em escalas de trabalho da Sala GPON (Supervisor: ${ConfigModule.SUPERVISOR}, fora da escala).
+Período atual: ${label}
+Dias: ${daysHeader}
+
+CÓDIGOS DE JORNADA PERMITIDOS:
+- Dia útil (seg a sex, não feriado): PRES (PL azul #4472C4), HO (PL verde #92D050), PE (PL amarelo #FFD966, até 20h), F (FOLGA laranja #F4B183).
+- Sábado, domingo e feriado: PN (PRESENTE laranja #F4B183, 08h-18h), PI (PRESENTE amarelo #FFD966, 08h-20h), F (FOLGA laranja #F4B183).
+
+REGRAS ATIVAS:
+1. Sábado: exatamente ${rules.sabadoPresentes} presentes.
+2. Domingo: exatamente ${rules.domingoTotal} presentes (${rules.domingoAtendimento} Atendimento + ${rules.domingoMonitoramento} Monitoramento + ${rules.domingoPlanilhas} Planilhas).
+3. Feriado: ${rules.feriadoAtendimento} Atendimento + ${rules.feriadoMonitoramento} Monitoramento + ${rules.feriadoPlanilhas} Planilhas.
+4. Sáb/Dom/Feriado (inclusive blocos Natal/Ano Novo): todos em PN e exatamente ${rules.wkndFeriadoPI} em PI (até 20h).
+5. Dia útil: exatamente ${rules.diaUtilPE} em PE (até 20h) [ALERTA].
+6. Folgas casadas: por fds, ${rules.fdsFolgaSD} Sáb+Dom e ${rules.fdsFolgaDS} Dom+Seg; por técnico, >= ${rules.minFolgaCasada} casada e <= ${rules.maxFolgaSD} Sáb+Dom.
+7. Sem folga em dia útil, exceto segunda de Dom+Seg e exceções de Natal/Ano Novo.
+8. Máximo de ${rules.maxDiasSeguidos} dias seguidos contando sequência anterior.
+9. Pares que nunca folgam juntos: ${rules.paresSeparados.map(p => p.join(' x ')).join('; ')}.
+10. Natal/Ano Novo (blocos fixos 24-25/12, 26-27/12, 31/12-01/01, 02-03/01): intocados (regras 1,2,3,6,7 não valem; regra 4 vale).
+
+CHECKLIST OBRIGATÓRIO ANTES DE RESPONDER:
+1) Tipo de dia × cor/código; 2) Regra de 1 até 20h no fds/feriado; 3) Quantidade e composição; 4) Folgas casadas; 5) Sem folga em dia útil; 6) Máx 12 dias seguidos; 7) Pares separados; 8) Blocos Natal/Ano Novo intocados; 9) Testar o conjunto final inteiro usando a ferramenta testar_trocas(trocas).
+
+ESCALA ATUAL:
+${gridLines}
+
+AUDITORIA ATUAL (${auditRes.errors.length} erros, ${auditRes.warnings.length} alertas):
+${errLines}`;
+      }
+
+      function executeTestarTrocas(trocas, period, team, rules) {
+        const before = RulesEngine.audit(period, team, rules);
+        const copyGrid = AutoScheduler.cloneGrid(period.grid);
+        const applied = [];
+        const rejected = [];
+
+        const validDays = new Set(before.days.map(d => d.iso));
+
+        (trocas || []).forEach(tr => {
+          const norm = ConfigModule.normalizeName(tr.colaborador);
+          const tech = team.find(t => ConfigModule.normalizeName(t.name) === norm || ConfigModule.normalizeName(t.name).includes(norm));
+          let iso = String(tr.dia || '').trim();
+          if (/^\d{2}\/\d{2}$/.test(iso)) {
+            const found = before.days.find(d => ConfigModule.formatShort(d.iso) === iso);
+            if (found) iso = found.iso;
+          }
+          const code = String(tr.para || '').trim().toUpperCase();
+          if (!tech) { rejected.push({ tr, motivo: 'Colaborador não encontrado' }); return; }
+          if (!validDays.has(iso)) { rejected.push({ tr, motivo: 'Dia fora do período' }); return; }
+          if (!ConfigModule.SHIFTS[code]) { rejected.push({ tr, motivo: 'Código inválido (use PRES, HO, PE, PI, PN, F)' }); return; }
+
+          const de = copyGrid[tech.id][iso];
+          copyGrid[tech.id][iso] = code;
+          applied.push({ techId: tech.id, colaborador: tech.name, dia: iso, de, para: code });
+        });
+
+        const after = RulesEngine.audit({ ...period, grid: copyGrid }, team, rules);
+        return {
+          applied,
+          rejected,
+          errosAntes: before.errors.length,
+          alertasAntes: before.warnings.length,
+          errosDepois: after.errors.length,
+          alertasDepois: after.warnings.length,
+          problemasRestantes: after.issues.slice(0, 25).map(i => `[${i.severity}] (${i.ruleName}) ${i.message}`)
+        };
+      }
+
+      const TOOL_DECL = [{
+        functionDeclarations: [{
+          name: 'testar_trocas',
+          description: 'Aplica uma lista de trocas de jornada em uma cópia da escala atual e devolve o resultado oficial da auditoria (erros antes x depois e problemas restantes). Sempre teste o conjunto final completo antes de responder.',
+          parameters: {
+            type: 'OBJECT',
+            properties: {
+              trocas: {
+                type: 'ARRAY',
+                description: 'Lista de trocas a aplicar na cópia da escala.',
+                items: {
+                  type: 'OBJECT',
+                  properties: {
+                    colaborador: { type: 'STRING', description: 'Nome completo do técnico' },
+                    dia: { type: 'STRING', description: 'Data no formato YYYY-MM-DD' },
+                    para: { type: 'STRING', description: 'Novo código: PRES, HO, PE, PI, PN ou F' }
+                  },
+                  required: ['colaborador', 'dia', 'para']
+                }
+              }
+            },
+            required: ['trocas']
+          }
+        }]
+      }];
+
+      async function callGeminiWithFallback({ apiKey, models, startModel, contents, systemText, onLog }) {
+        const ordered = [startModel, ...models.filter(m => m !== startModel)];
+        let lastErr = null;
+
+        for (const model of ordered) {
+          onLog(`Consultando modelo: ${model}...`);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const body = {
+            systemInstruction: { parts: [{ text: systemText }] },
+            contents,
+            tools: TOOL_DECL,
+            generationConfig: { temperature: 0.25 }
+          };
+          const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          if (resp.status === 429) {
+            onLog(`⚠ Cota excedida (429) em ${model}. Trocando automaticamente para o próximo modelo...`);
+            lastErr = new Error(`Cota excedida em ${model}`);
+            continue;
+          }
+          const json = await resp.json();
+          if (!resp.ok) {
+            const msg = json?.error?.message || `HTTP ${resp.status}`;
+            if (/quota|rate limit|resource_exhausted|429/i.test(msg)) {
+              onLog(`⚠ Limite de cota em ${model} (${msg}). Tentando próximo modelo...`);
+              lastErr = new Error(msg);
+              continue;
+            }
+            throw new Error(`Erro no modelo ${model}: ${msg}`);
+          }
+          return { json, modelUsed: model };
+        }
+        throw lastErr || new Error('Todos os modelos falharam por cota.');
+      }
+
+      async function runConversation({ apiKey, models, selectedModel, userPrompt, period, team, rules, auditRes, onLog }) {
+        const systemText = buildContextPrompt(period, team, rules, auditRes);
+        const contents = [{ role: 'user', parts: [{ text: userPrompt }] }];
+        let lastTested = null;
+        let currentModel = selectedModel;
+
+        for (let turn = 0; turn < 5; turn++) {
+          const { json, modelUsed } = await callGeminiWithFallback({
+            apiKey, models, startModel: currentModel, contents, systemText, onLog
+          });
+          currentModel = modelUsed;
+
+          const cand = json.candidates?.[0];
+          const parts = cand?.content?.parts || [];
+          const fnCallPart = parts.find(p => p.functionCall);
+
+          if (fnCallPart && fnCallPart.functionCall.name === 'testar_trocas') {
+            const args = fnCallPart.functionCall.args || {};
+            onLog(`🔧 IA chamou testar_trocas com ${(args.trocas || []).length} troca(s)...`);
+            const testResult = executeTestarTrocas(args.trocas || [], period, team, rules);
+            lastTested = testResult;
+            onLog(`📊 Auditoria simulada: erros ${testResult.errosAntes} → ${testResult.errosDepois} | alertas ${testResult.alertasAntes} → ${testResult.alertasDepois}`);
+
+            contents.push({ role: 'model', parts });
+            contents.push({
+              role: 'user',
+              parts: [{
+                functionResponse: {
+                  name: 'testar_trocas',
+                  response: testResult
+                }
+              }]
+            });
+            continue;
+          }
+
+          const text = parts.map(p => p.text || '').join('\n').trim();
+          return { text, lastTested, modelUsed: currentModel };
+        }
+        return { text: 'Limite de iterações de ferramenta atingido. Veja os resultados testados abaixo.', lastTested, modelUsed: currentModel };
+      }
+
+      return { FALLBACK_MODELS, fetchModels, buildContextPrompt, runConversation };
+    })();
+
+    /* =========================================================================
+       6. MÓDULO DE INTERFACE E ESTADO (PERSISTÊNCIA, GRADE, MODAIS, ABAS)
+       ========================================================================= */
+    const UI = (() => {
+      const STORAGE_KEY = 'escala_gpon_state_v1';
+      const API_KEY_STORAGE = 'escala_gpon_gemini_key';
+
+      let state = {
+        theme: 'light',
+        team: JSON.parse(JSON.stringify(ConfigModule.DEFAULT_TEAM)),
+        rules: JSON.parse(JSON.stringify(ConfigModule.DEFAULT_RULES)),
+        periods: {},
+        currentPeriodKey: '',
+        geminiModels: [...GeminiAssistant.FALLBACK_MODELS],
+        selectedModel: GeminiAssistant.FALLBACK_MODELS[0]
+      };
+
+      let simMode = false;
+      let undoStack = [];
+      let lastAudit = null;
+      let lastAIProposal = null;
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            theme: state.theme,
+            team: state.team,
+            rules: state.rules,
+            periods: state.periods,
+            currentPeriodKey: state.currentPeriodKey,
+            selectedModel: state.selectedModel
+          }));
+        } catch (e) {
+          console.warn('Falha ao salvar no localStorage:', e);
+        }
+      }
+
+      function createPeriodObject(year, month, prevStreak = {}, prevLastDayOff = {}) {
+        const p = { year, month, customHolidays: {}, prevStreak, prevLastDayOff, grid: {} };
+        p.grid = AutoScheduler.generateQuickSync(p, state.team, state.rules);
+        return p;
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed.theme) state.theme = parsed.theme;
+            if (Array.isArray(parsed.team) && parsed.team.length) state.team = parsed.team;
+            if (parsed.rules) state.rules = { ...ConfigModule.DEFAULT_RULES, ...parsed.rules };
+            if (parsed.periods && Object.keys(parsed.periods).length) state.periods = parsed.periods;
+            if (parsed.currentPeriodKey && state.periods[parsed.currentPeriodKey]) {
+              state.currentPeriodKey = parsed.currentPeriodKey;
+            }
+            if (parsed.selectedModel) state.selectedModel = parsed.selectedModel;
+          }
+        } catch (e) {
+          console.warn('Falha ao carregar estado salvo:', e);
+        }
+
+        if (!Object.keys(state.periods).length) {
+          const now = new Date();
+          const baseY = now.getFullYear();
+          const baseM = now.getDate() >= 14 ? now.getMonth() + 1 : (now.getMonth() === 0 ? 12 : now.getMonth());
+          const startY = (now.getDate() < 14 && now.getMonth() === 0) ? baseY - 1 : baseY;
+          const k1 = ConfigModule.periodKey(startY, baseM);
+          state.periods[k1] = createPeriodObject(startY, baseM);
+
+          const kNatal = ConfigModule.periodKey(startY, 12);
+          if (!state.periods[kNatal]) {
+            state.periods[kNatal] = createPeriodObject(startY, 12);
+          }
+          state.currentPeriodKey = k1;
+          saveState();
+        }
+        ensureTeamGridIntegrity();
+      }
+
+      function ensureTeamGridIntegrity() {
+        const p = getCurrentPeriod();
+        const days = ConfigModule.buildPeriodDays(p.year, p.month, p.customHolidays || {});
+        state.team.forEach(t => {
+          if (!p.grid[t.id]) p.grid[t.id] = {};
+          days.forEach(d => {
+            if (!p.grid[t.id][d.iso]) {
+              p.grid[t.id][d.iso] = d.isOffDayType ? 'PN' : 'PRES';
+            }
+          });
+        });
+      }
+
+      function getCurrentPeriod() {
+        return state.periods[state.currentPeriodKey];
+      }
+
+      function pushUndo() {
+        const p = getCurrentPeriod();
+        undoStack.push(AutoScheduler.cloneGrid(p.grid));
+        if (undoStack.length > 40) undoStack.shift();
+        document.getElementById('btnUndo').disabled = undoStack.length === 0;
+      }
+
+      function toast(msg) {
+        const c = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => { el.remove(); }, 3400);
+      }
+
+      function applyTheme() {
+        document.documentElement.setAttribute('data-theme', state.theme);
+      }
+
+      function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          const active = b.dataset.tab === tabName;
+          b.classList.toggle('active', active);
+          b.setAttribute('aria-selected', String(active));
+        });
+        document.querySelectorAll('.tab-panel').forEach(p => {
+          p.classList.toggle('active', p.id === `panel-${tabName}`);
+        });
+      }
+
+      function renderPeriodSelect() {
+        const sel = document.getElementById('periodSelect');
+        sel.innerHTML = '';
+        Object.keys(state.periods).sort().forEach(k => {
+          const p = state.periods[k];
+          const opt = document.createElement('option');
+          opt.value = k;
+          opt.textContent = ConfigModule.periodLabel(p.year, p.month);
+          if (k === state.currentPeriodKey) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      }
+
+      function renderStatusBanner(auditRes) {
+        const banner = document.getElementById('statusBanner');
+        const headline = document.getElementById('statusHeadline');
+        const list = document.getElementById('statusTopErrors');
+        const badge = document.getElementById('tabProblemsBadge');
+
+        const eCount = auditRes.errors.length;
+        const wCount = auditRes.warnings.length;
+        badge.textContent = eCount;
+        badge.classList.toggle('zero', eCount === 0);
+
+        banner.classList.remove('ok', 'error', 'warn');
+        if (eCount === 0 && wCount === 0) {
+          banner.classList.add('ok');
+          headline.textContent = '✔ Escala dentro das regras (0 erros, 0 alertas)';
+          list.style.display = 'none';
+          list.innerHTML = '';
+        } else if (eCount === 0) {
+          banner.classList.add('warn');
+          headline.textContent = `⚠ Escala dentro das regras obrigatórias · ${wCount} alerta(s)`;
+          list.style.display = 'block';
+          list.innerHTML = auditRes.warnings.slice(0, 3).map(w => `<li>${escapeHtml(w.message)}</li>`).join('');
+        } else {
+          banner.classList.add('error');
+          headline.textContent = `✖ ${eCount} regra(s) quebrada(s)${wCount ? ` · ${wCount} alerta(s)` : ''}`;
+          list.style.display = 'block';
+          list.innerHTML = auditRes.errors.slice(0, 3).map(e => `<li>${escapeHtml(e.message)}</li>`).join('');
+        }
+      }
+
+      function renderKPIs(auditRes) {
+        const s = auditRes.summary;
+        const kpiGrid = document.getElementById('kpiGrid');
+        kpiGrid.innerHTML = `
+          <div class="kpi-card">
+            <div class="kpi-label">Conformidade</div>
+            <div class="kpi-value ${s.compliance === 100 ? 'tag-ok' : (s.errorCount ? 'tag-err' : 'tag-warn')}">${s.compliance}%</div>
+            <div class="kpi-sub">${state.team.length} técnicos ativos na escala</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Erros / Alertas</div>
+            <div class="kpi-value ${s.errorCount ? 'tag-err' : 'tag-ok'}">${s.errorCount} <span style="font-size:15px;font-weight:600;color:var(--warning)">/ ${s.warningCount}</span></div>
+            <div class="kpi-sub">Auditoria em tempo real</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Sábados e Domingos na Meta</div>
+            <div class="kpi-value">${s.satOk}/${s.satTotal} <span style="font-size:14px;color:var(--text-soft)">sáb</span> · ${s.sunOk}/${s.sunTotal} <span style="font-size:14px;color:var(--text-soft)">dom</span></div>
+            <div class="kpi-sub">Meta: ${state.rules.sabadoPresentes} sáb · ${state.rules.domingoAtendimento}A+${state.rules.domingoMonitoramento}M dom</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Maior Sequência de Dias</div>
+            <div class="kpi-value ${s.globalMaxStreak > state.rules.maxDiasSeguidos ? 'tag-err' : ''}">${s.globalMaxStreak} dias</div>
+            <div class="kpi-sub">Limite: ${state.rules.maxDiasSeguidos} (${escapeHtml(s.globalMaxStreakTech || '—')})</div>
+          </div>
+        `;
+      }
+
+      function renderScheduleGrid(auditRes) {
+        const p = getCurrentPeriod();
+        const table = document.getElementById('scheduleGrid');
+        const days = auditRes.days;
+
+        let html = '<thead><tr><th class="col-tech">Técnico / Função</th>';
+        days.forEach(d => {
+          const cls = [];
+          if (d.specialBlock && state.rules.natalAtivo) cls.push('is-special');
+          else if (d.isHoliday) cls.push('is-holiday');
+          else if (d.isWeekend) cls.push('is-wknd');
+          if (auditRes.dayFlags[d.iso] === 'ERRO') cls.push('day-has-error');
+          else if (auditRes.dayFlags[d.iso] === 'ALERTA') cls.push('day-has-warn');
+
+          const tag = d.specialBlock && state.rules.natalAtivo
+            ? '<div class="day-tag special">ESP</div>'
+            : (d.isHoliday ? '<div class="day-tag">FER</div>' : '');
+
+          html += `<th class="${cls.join(' ')}" data-day-header="${d.iso}" title="Clique para detalhes ou marcar/desmarcar feriado (${d.holidayName || d.dowLabel})">
+            <div class="day-dow">${d.dowLabel}</div>
+            <div class="day-num">${ConfigModule.formatShort(d.iso)}</div>
+            ${tag}
+          </th>`;
+        });
+        html += '</tr></thead><tbody>';
+
+        state.team.forEach(t => {
+          html += `<tr>
+            <td class="col-tech" data-tech-name="${t.id}" title="Clique para ver histórico e sequência anterior">
+              <div class="tech-name">${escapeHtml(t.name)}</div>
+              <span class="role-pill role-${t.role}">${t.role}</span>
+            </td>`;
+
+          days.forEach(d => {
+            const code = (p.grid[t.id] && p.grid[t.id][d.iso]) || 'PRES';
+            const sh = ConfigModule.SHIFTS[code] || ConfigModule.SHIFTS.PRES;
+            const flag = auditRes.cellFlags[`${t.id}|${d.iso}`];
+            const flagCls = flag === 'ERRO' ? 'cell-error' : (flag === 'ALERTA' ? 'cell-warn' : '');
+            const simCls = simMode ? 'sim-clickable' : '';
+            html += `<td class="shift-cell ${simCls}" data-cell-tech="${t.id}" data-cell-day="${d.iso}">
+              <div class="shift-box shift-${sh.code} ${flagCls}" title="${escapeHtml(t.name)} · ${ConfigModule.formatBR(d.iso)} · ${sh.code} (${sh.label})">
+                <span>${sh.cell}</span>
+                <span class="shift-sub">${sh.code}</span>
+              </div>
+            </td>`;
+          });
+          html += '</tr>';
+        });
+        html += '</tbody><tfoot>';
+
+        const footRows = [
+          { label: 'Trabalhando', fn: d => auditRes.dayStats[d.iso].presentCount },
+          { label: 'Até 20h (PE/PI)', fn: d => auditRes.dayStats[d.iso].countUntil20 },
+          { label: 'Home office (HO)', fn: d => auditRes.dayStats[d.iso].countHO },
+          { label: 'Folga (F)', fn: d => auditRes.dayStats[d.iso].offCount }
+        ];
+        footRows.forEach(fr => {
+          html += `<tr><td class="col-tech">${fr.label}</td>`;
+          days.forEach(d => { html += `<td>${fr.fn(d)}</td>`; });
+          html += '</tr>';
+        });
+        html += '</tfoot>';
+        table.innerHTML = html;
+      }
+
+      function renderProblems(auditRes) {
+        const ruleFilter = document.getElementById('filterRule');
+        const prevRuleVal = ruleFilter.value || 'ALL';
+        const usedRules = [...new Set(auditRes.issues.map(i => i.ruleId))];
+        ruleFilter.innerHTML = '<option value="ALL">Todas as regras</option>' +
+          usedRules.map(r => `<option value="${r}" ${r === prevRuleVal ? 'selected' : ''}>${RulesEngine.RULE_NAMES[r] || r}</option>`).join('');
+
+        const sevVal = document.getElementById('filterSeverity').value;
+        const rVal = ruleFilter.value;
+        const filtered = auditRes.issues.filter(i =>
+          (sevVal === 'ALL' || i.severity === sevVal) &&
+          (rVal === 'ALL' || i.ruleId === rVal)
+        );
+
+        document.getElementById('problemsSummaryText').textContent =
+          `${auditRes.errors.length} erro(s) · ${auditRes.warnings.length} alerta(s)`;
+
+        const list = document.getElementById('problemList');
+        if (!filtered.length) {
+          list.innerHTML = `<div class="muted" style="padding:18px;text-align:center;">✔ Nenhum problema encontrado para este filtro.</div>`;
+          return;
+        }
+        list.innerHTML = filtered.map(i => `
+          <div class="problem-item" data-goto-day="${i.dayIso || ''}" data-goto-tech="${i.techId || ''}">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="problem-sev sev-${i.severity}">${i.severity}</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">${escapeHtml(i.ruleName)}</div>
+                <div style="font-size:12.5px;color:var(--text-muted);">${escapeHtml(i.message)}</div>
+              </div>
+            </div>
+            <span class="muted" style="white-space:nowrap;">Ver na grade →</span>
+          </div>
+        `).join('');
+      }
+
+      function renderAnalyses(auditRes) {
+        const tTable = document.getElementById('analysisTechTable');
+        let html = `<thead><tr>
+          <th>Técnico</th><th>Função</th>
+          <th class="num">Sáb</th><th class="num">Dom</th><th class="num">Fer</th>
+          <th class="num">Folga Sáb+Dom</th><th class="num">Folga Dom+Seg</th><th class="num">Casadas</th>
+          <th class="num">PRES</th><th class="num">HO</th><th class="num">PE</th><th class="num">PI</th><th class="num">PN</th><th class="num">F</th>
+          <th class="num">Maior Seq.</th>
+        </tr></thead><tbody>`;
+
+        state.team.forEach(t => {
+          const st = auditRes.techStats[t.id];
+          const totCas = st.sdCount + st.dsCount;
+          const casCls = totCas < state.rules.minFolgaCasada ? 'tag-err' : 'tag-ok';
+          const sdCls = st.sdCount > state.rules.maxFolgaSD ? 'tag-err' : '';
+          const seqCls = st.maxStreak > state.rules.maxDiasSeguidos ? 'tag-err' : '';
+          html += `<tr>
+            <td><strong>${escapeHtml(t.name)}</strong></td>
+            <td><span class="role-pill role-${t.role}">${t.role}</span></td>
+            <td class="num">${st.satsWorked}<span class="bar-mini" style="width:${st.satsWorked * 8}px"></span></td>
+            <td class="num">${st.sunsWorked}</td>
+            <td class="num">${st.holsWorked}</td>
+            <td class="num ${sdCls}">${st.sdCount}</td>
+            <td class="num">${st.dsCount}</td>
+            <td class="num ${casCls}">${totCas}</td>
+            <td class="num">${st.counts.PRES}</td>
+            <td class="num">${st.counts.HO}</td>
+            <td class="num">${st.counts.PE}</td>
+            <td class="num">${st.counts.PI}</td>
+            <td class="num">${st.counts.PN}</td>
+            <td class="num">${st.counts.F}</td>
+            <td class="num ${seqCls}">${st.maxStreak}d</td>
+          </tr>`;
+        });
+        html += '</tbody>';
+        tTable.innerHTML = html;
+
+        const wTable = document.getElementById('analysisWeekendTable');
+        let wh = `<thead><tr>
+          <th>Fim de Semana</th>
+          <th class="num">Sáb Presentes</th>
+          <th class="num">Dom Presentes (A/M/P)</th>
+          <th class="num">PI (Sáb / Dom)</th>
+          <th>Folgas Sáb+Dom</th>
+          <th>Folgas Dom+Seg</th>
+          <th>Situação</th>
+        </tr></thead><tbody>`;
+
+        auditRes.weekends.forEach(w => {
+          const ok = w.touchesSpecial || (
+            w.satPresent === state.rules.sabadoPresentes &&
+            w.sunPresent === state.rules.domingoTotal &&
+            w.sunRoles.Atendimento === state.rules.domingoAtendimento &&
+            w.sunRoles.Monitoramento === state.rules.domingoMonitoramento &&
+            w.satPI === state.rules.wkndFeriadoPI &&
+            w.sunPI === state.rules.wkndFeriadoPI &&
+            w.sdTechs.length === state.rules.fdsFolgaSD &&
+            (!w.monIso || w.dsTechs.length === state.rules.fdsFolgaDS)
+          );
+          wh += `<tr>
+            <td><strong>${ConfigModule.formatShort(w.satIso)} e ${ConfigModule.formatShort(w.sunIso)}</strong>${w.touchesSpecial ? ' <span class="muted">(Natal/Ano Novo)</span>' : ''}</td>
+            <td class="num">${w.satPresent}</td>
+            <td class="num">${w.sunPresent} (${w.sunRoles.Atendimento}A / ${w.sunRoles.Monitoramento}M / ${w.sunRoles.Planilhas}P)</td>
+            <td class="num">${w.satPI} / ${w.sunPI}</td>
+            <td>${w.sdTechs.map(t => t.name.split(' ')[0]).join(', ') || '—'}</td>
+            <td>${w.dsTechs.map(t => t.name.split(' ')[0]).join(', ') || '—'}</td>
+            <td>${w.touchesSpecial ? '<span class="muted">Bloco especial</span>' : (ok ? '<span class="tag-ok">✔ Na meta</span>' : '<span class="tag-err">✖ Fora da meta</span>')}</td>
+          </tr>`;
+        });
+        wh += '</tbody>';
+        wTable.innerHTML = wh;
+      }
+
+      function renderRulesTab() {
+        const r = state.rules;
+        const container = document.getElementById('rulesEditorGrid');
+        container.innerHTML = `
+          <div class="rule-card">
+            <h4>Regras 1, 2 e 3 · Quantidade e Composição</h4>
+            <div class="rule-row"><span>Sábado — presentes</span><input type="number" min="0" max="30" id="r_sabadoPresentes" value="${r.sabadoPresentes}"></div>
+            <div class="rule-row"><span>Domingo — Atendimento</span><input type="number" min="0" max="20" id="r_domingoAtendimento" value="${r.domingoAtendimento}"></div>
+            <div class="rule-row"><span>Domingo — Monitoramento</span><input type="number" min="0" max="20" id="r_domingoMonitoramento" value="${r.domingoMonitoramento}"></div>
+            <div class="rule-row"><span>Domingo — Planilhas</span><input type="number" min="0" max="20" id="r_domingoPlanilhas" value="${r.domingoPlanilhas}"></div>
+            <div class="rule-row"><span>Feriado — Atendimento</span><input type="number" min="0" max="20" id="r_feriadoAtendimento" value="${r.feriadoAtendimento}"></div>
+            <div class="rule-row"><span>Feriado — Monitoramento</span><input type="number" min="0" max="20" id="r_feriadoMonitoramento" value="${r.feriadoMonitoramento}"></div>
+            <div class="rule-row"><span>Feriado — Planilhas</span><input type="number" min="0" max="20" id="r_feriadoPlanilhas" value="${r.feriadoPlanilhas}"></div>
+          </div>
+
+          <div class="rule-card">
+            <h4>Regras 4 e 5 · Plantões até 20h</h4>
+            <div class="rule-row"><span>Sáb/Dom/Feriado — PI (até 20h)</span><input type="number" min="0" max="10" id="r_wkndFeriadoPI" value="${r.wkndFeriadoPI}"></div>
+            <div class="rule-row"><span>Dia útil — PE (até 20h, alerta)</span><input type="number" min="0" max="10" id="r_diaUtilPE" value="${r.diaUtilPE}"></div>
+          </div>
+
+          <div class="rule-card">
+            <h4>Regras 6, 7 e 8 · Folgas Casadas e Sequência</h4>
+            <div class="rule-row"><span>Por fds — folgas Sáb+Dom</span><input type="number" min="0" max="10" id="r_fdsFolgaSD" value="${r.fdsFolgaSD}"></div>
+            <div class="rule-row"><span>Por fds — folgas Dom+Seg</span><input type="number" min="0" max="10" id="r_fdsFolgaDS" value="${r.fdsFolgaDS}"></div>
+            <div class="rule-row"><span>Mínimo folgas casadas / técnico</span><input type="number" min="0" max="5" id="r_minFolgaCasada" value="${r.minFolgaCasada}"></div>
+            <div class="rule-row"><span>Máximo Sáb+Dom / técnico</span><input type="number" min="0" max="5" id="r_maxFolgaSD" value="${r.maxFolgaSD}"></div>
+            <div class="rule-row"><span>Máximo dias trabalhados seguidos</span><input type="number" min="1" max="30" id="r_maxDiasSeguidos" value="${r.maxDiasSeguidos}"></div>
+            <div class="rule-row">
+              <label><input type="checkbox" id="r_proibirFolgaDiaUtil" ${r.proibirFolgaDiaUtil ? 'checked' : ''}> Proibir folga em dia útil (exceto Seg DS / Natal)</label>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <h4>Regras 9 e 10 · Pares Separados e Natal/Ano Novo</h4>
+            <div class="field" style="margin-bottom:8px;">
+              <label for="r_paresText">Pares que nunca folgam juntos (1 par por linha, separado por <code>|</code>)</label>
+              <textarea id="r_paresText" rows="3">${r.paresSeparados.map(p => p.join(' | ')).join('\n')}</textarea>
+            </div>
+            <div class="rule-row">
+              <label><input type="checkbox" id="r_isentarParDomingoCotaZero" ${r.isentarParDomingoCotaZero ? 'checked' : ''}> Isentar par no domingo quando função tem cota 0 (ex.: Planilhas)</label>
+            </div>
+            <div class="rule-row">
+              <label><input type="checkbox" id="r_natalAtivo" ${r.natalAtivo ? 'checked' : ''}> Ativar blocos fixos de Natal e Ano Novo</label>
+            </div>
+            <div class="rule-row"><span>Ano-base da tabela oficial de Natal</span><input type="number" min="2020" max="2040" id="r_natalAnoBase" value="${r.natalAnoBase}"></div>
+            <div class="muted">No ano seguinte ao ano-base, os grupos A e B invertem automaticamente.</div>
+          </div>
+        `;
+
+        const teamTable = document.getElementById('teamTable');
+        let th = `<thead><tr><th>Nome do Técnico</th><th>Função</th><th>Seq. Anterior</th><th style="width:110px;">Ações</th></tr></thead><tbody>`;
+        const p = getCurrentPeriod();
+        state.team.forEach(t => {
+          const opts = ConfigModule.ROLES.map(role => `<option value="${role}" ${t.role === role ? 'selected' : ''}>${role}</option>`).join('');
+          th += `<tr>
+            <td><input type="text" value="${escapeHtml(t.name)}" data-team-name="${t.id}" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface-2);"></td>
+            <td><select data-team-role="${t.id}" style="padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface-2);">${opts}</select></td>
+            <td><input type="number" min="0" max="20" value="${p.prevStreak?.[t.id] || 0}" data-team-streak="${t.id}" style="width:72px;padding:5px;border:1px solid var(--border);border-radius:4px;background:var(--surface-2);text-align:center;"></td>
+            <td><button type="button" class="btn-sm btn-danger" data-team-del="${t.id}">Remover</button></td>
+          </tr>`;
+        });
+        th += '</tbody>';
+        teamTable.innerHTML = th;
+      }
+
+      function renderGeminiModelsSelect() {
+        const sel = document.getElementById('geminiModelSelect');
+        sel.innerHTML = state.geminiModels.map(m =>
+          `<option value="${escapeHtml(m)}" ${m === state.selectedModel ? 'selected' : ''}>${escapeHtml(m)}</option>`
+        ).join('');
+      }
+
+      function renderAll() {
+        ensureTeamGridIntegrity();
+        const p = getCurrentPeriod();
+        lastAudit = RulesEngine.audit(p, state.team, state.rules);
+        renderPeriodSelect();
+        renderStatusBanner(lastAudit);
+        renderKPIs(lastAudit);
+        renderScheduleGrid(lastAudit);
+        renderProblems(lastAudit);
+        renderAnalyses(lastAudit);
+        renderRulesTab();
+      }
+
+      function cycleCell(techId, dayIso) {
+        const p = getCurrentPeriod();
+        const dayObj = lastAudit.days.find(d => d.iso === dayIso);
+        if (!dayObj) return;
+        const cur = p.grid[techId][dayIso] || 'PRES';
+        const seq = dayObj.isOffDayType ? ['PN', 'PI', 'F'] : ['PRES', 'HO', 'PE', 'F'];
+        const nextIdx = (seq.indexOf(cur) + 1) % seq.length;
+        pushUndo();
+        p.grid[techId][dayIso] = seq[nextIdx];
+        saveState();
+        renderAll();
+      }
+
+      function openModal(title, bodyHtml, footerHtml = '') {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalBody').innerHTML = bodyHtml;
+        document.getElementById('modalFooter').innerHTML = footerHtml || '<button type="button" id="modalOkClose">Fechar</button>';
+        document.getElementById('modalBackdrop').classList.add('open');
+        const okBtn = document.getElementById('modalOkClose');
+        if (okBtn) okBtn.onclick = closeModal;
+      }
+
+      function closeModal() {
+        document.getElementById('modalBackdrop').classList.remove('open');
+      }
+
+      function openTechModal(techId) {
+        const tech = state.team.find(t => t.id === techId);
+        if (!tech) return;
+        const p = getCurrentPeriod();
+        const st = lastAudit.techStats[techId];
+        const techIssues = lastAudit.issues.filter(i => i.techId === techId);
+        const prevVal = Number(p.prevStreak?.[techId]) || 0;
+
+        const body = `
+          <p><strong>Função:</strong> <span class="role-pill role-${tech.role}">${tech.role}</span></p>
+          <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin:10px 0;">
+            <div class="kpi-card"><div class="kpi-label">Sáb / Dom / Fer</div><div class="kpi-value" style="font-size:18px;">${st.satsWorked} / ${st.sunsWorked} / ${st.holsWorked}</div></div>
+            <div class="kpi-card"><div class="kpi-label">Folgas Casadas</div><div class="kpi-value" style="font-size:18px;">${st.sdCount} SD · ${st.dsCount} DS</div></div>
+            <div class="kpi-card"><div class="kpi-label">Maior Sequência</div><div class="kpi-value" style="font-size:18px;">${st.maxStreak}d</div></div>
+          </div>
+          <p class="muted">Jornadas no período: PRES=${st.counts.PRES}, HO=${st.counts.HO}, PE=${st.counts.PE}, PI=${st.counts.PI}, PN=${st.counts.PN}, FOLGA=${st.counts.F}</p>
+          <div class="field" style="margin-top:12px;">
+            <label for="modalPrevStreak">Dias trabalhados seguidos vindos do período anterior:</label>
+            <input type="number" id="modalPrevStreak" min="0" max="20" value="${prevVal}" style="max-width:120px;">
+          </div>
+          <h4 style="margin:12px 0 6px;">Alertas/Erros deste técnico (${techIssues.length})</h4>
+          ${techIssues.length ? `<ul style="padding-left:18px;margin:0;">${techIssues.map(i => `<li><strong>[${i.severity}]</strong> ${escapeHtml(i.message)}</li>`).join('')}</ul>` : '<p class="tag-ok">✔ Nenhum problema para este técnico.</p>'}
+        `;
+        openModal(tech.name, body, `
+          <button type="button" id="btnSaveTechStreak" class="btn-primary">Salvar sequência anterior</button>
+          <button type="button" id="modalOkClose">Fechar</button>
+        `);
+        document.getElementById('btnSaveTechStreak').onclick = () => {
+          if (!p.prevStreak) p.prevStreak = {};
+          p.prevStreak[techId] = Math.max(0, Number(document.getElementById('modalPrevStreak').value) || 0);
+          saveState();
+          renderAll();
+          closeModal();
+          toast('Sequência anterior atualizada.');
+        };
+      }
+
+      function openDayModal(dayIso) {
+        const p = getCurrentPeriod();
+        const d = lastAudit.days.find(x => x.iso === dayIso);
+        if (!d) return;
+        const workers = [];
+        const off = [];
+        state.team.forEach(t => {
+          const code = p.grid[t.id][dayIso];
+          const sh = ConfigModule.SHIFTS[code];
+          if (code !== 'F') workers.push({ t, sh });
+          else off.push({ t, sh });
+        });
+        const dayIssues = lastAudit.issues.filter(i => i.dayIso === dayIso);
+
+        const body = `
+          <p><strong>Data:</strong> ${ConfigModule.formatBR(d.iso)} (${d.dowLabel}) ${d.isHoliday ? `· <span class="tag-err">Feriado: ${escapeHtml(d.holidayName)}</span>` : ''}</p>
+          ${d.specialBlock && state.rules.natalAtivo ? `<p><strong style="color:#7c3aed;">Bloco especial de Natal/Ano Novo (${d.specialBlock})</strong></p>` : ''}
+          <h4 style="margin:10px 0 6px;">Trabalhando (${workers.length})</h4>
+          <ul style="padding-left:18px;margin:0 0 10px;">
+            ${workers.map(w => `<li><strong>${escapeHtml(w.t.name)}</strong> (${w.t.role}) — <span class="swatch shift-${w.sh.code}" style="min-width:44px;height:18px;font-size:10px;">${w.sh.code}</span></li>`).join('') || '<li>Ninguém</li>'}
+          </ul>
+          <h4 style="margin:10px 0 6px;">De Folga (${off.length})</h4>
+          <p class="muted">${off.map(o => escapeHtml(o.t.name)).join(', ') || 'Ninguém'}</p>
+          <h4 style="margin:10px 0 6px;">Auditoria do dia (${dayIssues.length})</h4>
+          ${dayIssues.length ? `<ul style="padding-left:18px;margin:0;">${dayIssues.map(i => `<li><strong>[${i.severity}]</strong> ${escapeHtml(i.message)}</li>`).join('')}</ul>` : '<p class="tag-ok">✔ Dia sem problemas.</p>'}
+        `;
+        openModal(`Dia ${ConfigModule.formatBR(d.iso)}`, body, `
+          <button type="button" id="btnToggleHoliday" class="${d.isHoliday ? '' : 'btn-primary'}">${d.isHoliday ? 'Desmarcar feriado' : 'Marcar como feriado'}</button>
+          <button type="button" id="modalOkClose">Fechar</button>
+        `);
+        document.getElementById('btnToggleHoliday').onclick = () => {
+          if (!p.customHolidays) p.customHolidays = {};
+          const nextHol = !d.isHoliday;
+          p.customHolidays[dayIso] = nextHol;
+          pushUndo();
+          state.team.forEach(t => {
+            const cur = p.grid[t.id][dayIso];
+            if (cur === 'F') return;
+            if (nextHol && (cur === 'PRES' || cur === 'HO')) p.grid[t.id][dayIso] = 'PN';
+            else if (nextHol && cur === 'PE') p.grid[t.id][dayIso] = 'PI';
+            else if (!nextHol && !d.isWeekend && cur === 'PN') p.grid[t.id][dayIso] = 'PRES';
+            else if (!nextHol && !d.isWeekend && cur === 'PI') p.grid[t.id][dayIso] = 'PE';
+          });
+          saveState();
+          renderAll();
+          closeModal();
+          toast(nextHol ? `Feriado marcado em ${ConfigModule.formatShort(dayIso)}.` : `Feriado removido de ${ConfigModule.formatShort(dayIso)}.`);
+        };
+      }
+
+      function createNextPeriod() {
+        const cur = getCurrentPeriod();
+        const { year, month } = ConfigModule.nextPeriodYM(cur.year, cur.month);
+        const key = ConfigModule.periodKey(year, month);
+        if (state.periods[key]) {
+          state.currentPeriodKey = key;
+          undoStack = [];
+          saveState();
+          renderAll();
+          toast(`Período ${ConfigModule.periodLabel(year, month)} já existia e foi aberto.`);
+          return;
+        }
+        const prevStreak = {};
+        const prevLastDayOff = {};
+        const lastDay = lastAudit.days[lastAudit.days.length - 1];
+        state.team.forEach(t => {
+          prevStreak[t.id] = lastAudit.techStats[t.id]?.endStreak || 0;
+          prevLastDayOff[t.id] = lastDay && lastDay.isSun && cur.grid[t.id][lastDay.iso] === 'F';
+        });
+        state.periods[key] = createPeriodObject(year, month, prevStreak, prevLastDayOff);
+        state.currentPeriodKey = key;
+        undoStack = [];
+        saveState();
+        renderAll();
+        toast(`Próximo período criado: ${ConfigModule.periodLabel(year, month)} (sequências anteriores herdadas).`);
+      }
+
+      function escapeHtml(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      async function handleAutoDraft() {
+        const wrap = document.getElementById('progressWrap');
+        const fill = document.getElementById('progressFill');
+        const lbl = document.getElementById('progressLabel');
+        const pctEl = document.getElementById('progressPct');
+        const btn = document.getElementById('btnAutoDraft');
+
+        wrap.classList.add('show');
+        btn.disabled = true;
+        try {
+          const p = getCurrentPeriod();
+          pushUndo();
+          const best = await AutoScheduler.generateOptimized(p, state.team, state.rules, (pct, text) => {
+            fill.style.width = `${pct}%`;
+            pctEl.textContent = `${pct}%`;
+            lbl.textContent = text;
+          });
+          p.grid = best;
+          saveState();
+          renderAll();
+          toast(`Rascunho gerado: ${lastAudit.errors.length} erro(s) e ${lastAudit.warnings.length} alerta(s).`);
+        } finally {
+          btn.disabled = false;
+          setTimeout(() => wrap.classList.remove('show'), 900);
+        }
+      }
+
+      function renderAIResult({ text, lastTested, modelUsed }) {
+        lastAIProposal = lastTested;
+        const area = document.getElementById('aiResultArea');
+        let html = `<div class="muted" style="margin-bottom:8px;">Modelo utilizado: <strong>${escapeHtml(modelUsed)}</strong></div>`;
+        html += `<div class="ai-response-text">${escapeHtml(text)}</div>`;
+
+        if (lastTested && lastTested.applied.length > 0) {
+          html += `
+            <div class="diff-summary">
+              <div class="diff-pill">Erros: <span class="tag-err">${lastTested.errosAntes}</span> → <span class="${lastTested.errosDepois === 0 ? 'tag-ok' : 'tag-err'}">${lastTested.errosDepois}</span></div>
+              <div class="diff-pill">Alertas: <span>${lastTested.alertasAntes}</span> → <span>${lastTested.alertasDepois}</span></div>
+              <div class="diff-pill">Trocas propostas: ${lastTested.applied.length}</div>
+            </div>
+            <div class="data-table-wrap" style="margin-bottom:12px;">
+              <table class="data-table">
+                <thead><tr><th>Colaborador</th><th>Dia</th><th>De → Para</th><th>Cor</th></tr></thead>
+                <tbody>
+                  ${lastTested.applied.map(a => {
+                    const sh = ConfigModule.SHIFTS[a.para];
+                    return `<tr>
+                      <td>${escapeHtml(a.colaborador)}</td>
+                      <td>${ConfigModule.formatBR(a.dia)}</td>
+                      <td><strong>${a.de}</strong> → <strong>${a.para}</strong></td>
+                      <td><span class="swatch shift-${sh.code}">${sh.cell} (${sh.code})</span></td>
+                    </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+            <button id="btnApplyAIProposal" class="btn-primary" type="button">✔ Aplicar na grade (simulação)</button>
+          `;
+        }
+        area.innerHTML = html;
+        const applyBtn = document.getElementById('btnApplyAIProposal');
+        if (applyBtn) {
+          applyBtn.onclick = () => {
+            if (!lastAIProposal || !lastAIProposal.applied.length) return;
+            const p = getCurrentPeriod();
+            pushUndo();
+            lastAIProposal.applied.forEach(a => {
+              if (p.grid[a.techId]) p.grid[a.techId][a.dia] = a.para;
+            });
+            simMode = true;
+            document.getElementById('btnToggleSim').classList.add('btn-active');
+            document.getElementById('simBanner').classList.add('show');
+            saveState();
+            renderAll();
+            switchTab('escala');
+            toast(`${lastAIProposal.applied.length} troca(s) aplicada(s) em modo simulação. Use "Desfazer" se precisar reverter.`);
+          };
+        }
+      }
+
+      async function handleRunAI(customPrompt = null) {
+        const apiKey = document.getElementById('geminiApiKey').value.trim();
+        if (!apiKey) {
+          toast('Informe sua chave da API do Gemini ou use "Copiar para o Gemini".');
+          document.getElementById('geminiApiKey').focus();
+          return;
+        }
+        localStorage.setItem(API_KEY_STORAGE, apiKey);
+        const prompt = customPrompt || document.getElementById('aiPromptInput').value.trim();
+        if (!prompt) {
+          toast('Digite uma instrução ou escolha um botão rápido.');
+          return;
+        }
+        const logBox = document.getElementById('aiLogBox');
+        logBox.style.display = 'block';
+        logBox.textContent = '';
+        const log = (m) => { logBox.textContent += m + '\n'; logBox.scrollTop = logBox.scrollHeight; };
+
+        const btn = document.getElementById('btnRunAI');
+        btn.disabled = true;
+        try {
+          const result = await GeminiAssistant.runConversation({
+            apiKey,
+            models: state.geminiModels,
+            selectedModel: document.getElementById('geminiModelSelect').value || state.selectedModel,
+            userPrompt: prompt,
+            period: getCurrentPeriod(),
+            team: state.team,
+            rules: state.rules,
+            auditRes: lastAudit,
+            onLog: log
+          });
+          state.selectedModel = result.modelUsed;
+          renderGeminiModelsSelect();
+          renderAIResult(result);
+        } catch (err) {
+          log(`✖ Erro: ${err.message}`);
+          toast(`Erro na API Gemini: ${err.message}`);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      function bindEvents() {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        });
+
+        document.getElementById('periodSelect').addEventListener('change', (e) => {
+          state.currentPeriodKey = e.target.value;
+          undoStack = [];
+          document.getElementById('btnUndo').disabled = true;
+          saveState();
+          renderAll();
+        });
+
+        const moreBtn = document.getElementById('btnMoreMenu');
+        const moreMenu = document.getElementById('moreMenu');
+        moreBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const open = moreMenu.classList.toggle('open');
+          moreBtn.setAttribute('aria-expanded', String(open));
+        });
+        document.addEventListener('click', () => {
+          moreMenu.classList.remove('open');
+          moreBtn.setAttribute('aria-expanded', 'false');
+        });
+
+        document.getElementById('menuNextPeriod').addEventListener('click', createNextPeriod);
+        document.getElementById('menuImportXlsx').addEventListener('click', () => {
+          document.getElementById('xlsxFileInput').click();
+        });
+        document.getElementById('xlsxFileInput').addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          e.target.value = '';
+          if (!file) return;
+          try {
+            const p = getCurrentPeriod();
+            const res = await ExcelIO.importXlsx(file, p, state.team);
+            pushUndo();
+            p.grid = res.grid;
+            saveState();
+            renderAll();
+            toast(`Planilha importada: ${res.importedTechs} técnico(s), ${res.importedCells} célula(s).`);
+          } catch (err) {
+            toast(`Erro ao importar .xlsx: ${err.message}`);
+          }
+        });
+
+        document.getElementById('menuCopySheets').addEventListener('click', async () => {
+          try {
+            await ExcelIO.copyToGoogleSheets(getCurrentPeriod(), state.team, lastAudit);
+            toast('Escala copiada com cores! Cole (Ctrl+V) direto no Google Sheets.');
+          } catch (err) {
+            toast(`Falha ao copiar: ${err.message}`);
+          }
+        });
+
+        document.getElementById('menuToggleTheme').addEventListener('click', () => {
+          state.theme = state.theme === 'dark' ? 'light' : 'dark';
+          applyTheme();
+          saveState();
+        });
+
+        document.getElementById('btnDownloadExcel').addEventListener('click', async () => {
+          try {
+            await ExcelIO.exportXlsx(getCurrentPeriod(), state.team, lastAudit);
+            toast('Arquivo .xlsx gerado com abas ESCALA, RESUMO e PLANTÕES.');
+          } catch (err) {
+            toast(`Erro ao exportar Excel: ${err.message}`);
+          }
+        });
+
+        document.getElementById('btnGoProblems').addEventListener('click', () => switchTab('problemas'));
+        document.getElementById('btnAskAIFix').addEventListener('click', () => {
+          switchTab('ia');
+          const txt = 'Analise todos os erros e alertas da escala atual, proponha o menor conjunto de trocas para zerar os erros respeitando todo o checklist obrigatório e teste o conjunto final com testar_trocas antes de responder.';
+          document.getElementById('aiPromptInput').value = txt;
+          if (document.getElementById('geminiApiKey').value.trim()) {
+            handleRunAI(txt);
+          } else {
+            toast('Informe sua chave Gemini ou clique em "Copiar para o Gemini".');
+          }
+        });
+
+        const toggleSim = (force) => {
+          simMode = typeof force === 'boolean' ? force : !simMode;
+          document.getElementById('btnToggleSim').classList.toggle('btn-active', simMode);
+          document.getElementById('simBanner').classList.toggle('show', simMode);
+          renderScheduleGrid(lastAudit);
+        };
+        document.getElementById('btnToggleSim').addEventListener('click', () => toggleSim());
+        document.getElementById('btnExitSim').addEventListener('click', () => toggleSim(false));
+
+        document.getElementById('btnUndo').addEventListener('click', () => {
+          if (!undoStack.length) return;
+          getCurrentPeriod().grid = undoStack.pop();
+          document.getElementById('btnUndo').disabled = undoStack.length === 0;
+          saveState();
+          renderAll();
+          toast('Última alteração desfeita.');
+        });
+
+        document.getElementById('btnAutoDraft').addEventListener('click', handleAutoDraft);
+
+        document.getElementById('btnToggleLegend').addEventListener('click', () => {
+          document.getElementById('legendBox').classList.toggle('open');
+        });
+        document.getElementById('btnEditTeamQuick').addEventListener('click', () => {
+          switchTab('regras');
+          document.getElementById('teamManagerCard').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        document.getElementById('scheduleGrid').addEventListener('click', (e) => {
+          const dayTh = e.target.closest('[data-day-header]');
+          if (dayTh) { openDayModal(dayTh.dataset.dayHeader); return; }
+
+          const techTd = e.target.closest('[data-tech-name]');
+          if (techTd) { openTechModal(techTd.dataset.techName); return; }
+
+          const cellTd = e.target.closest('[data-cell-tech]');
+          if (cellTd) {
+            if (simMode) {
+              cycleCell(cellTd.dataset.cellTech, cellTd.dataset.cellDay);
+            } else {
+              openDayModal(cellTd.dataset.cellDay);
+            }
+          }
+        });
+
+        document.getElementById('filterSeverity').addEventListener('change', () => renderProblems(lastAudit));
+        document.getElementById('filterRule').addEventListener('change', () => renderProblems(lastAudit));
+        document.getElementById('problemList').addEventListener('click', (e) => {
+          const item = e.target.closest('.problem-item');
+          if (!item) return;
+          const dayIso = item.dataset.gotoDay;
+          const techId = item.dataset.gotoTech;
+          switchTab('escala');
+          let target = null;
+          if (dayIso && techId) {
+            target = document.querySelector(`[data-cell-tech="${techId}"][data-cell-day="${dayIso}"]`);
+          } else if (dayIso) {
+            target = document.querySelector(`[data-day-header="${dayIso}"]`);
+          } else if (techId) {
+            target = document.querySelector(`[data-tech-name="${techId}"]`);
+          }
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            target.classList.remove('cell-pulse');
+            void target.offsetWidth;
+            target.classList.add('cell-pulse');
+          }
+        });
+
+        document.getElementById('btnSaveRules').addEventListener('click', () => {
+          const num = (id, def) => Math.max(0, Number(document.getElementById(id).value) ?? def);
+          const r = state.rules;
+          r.sabadoPresentes = num('r_sabadoPresentes', 8);
+          r.domingoAtendimento = num('r_domingoAtendimento', 2);
+          r.domingoMonitoramento = num('r_domingoMonitoramento', 1);
+          r.domingoPlanilhas = num('r_domingoPlanilhas', 0);
+          r.domingoTotal = r.domingoAtendimento + r.domingoMonitoramento + r.domingoPlanilhas;
+          r.feriadoAtendimento = num('r_feriadoAtendimento', 3);
+          r.feriadoMonitoramento = num('r_feriadoMonitoramento', 1);
+          r.feriadoPlanilhas = num('r_feriadoPlanilhas', 1);
+          r.wkndFeriadoPI = num('r_wkndFeriadoPI', 1);
+          r.diaUtilPE = num('r_diaUtilPE', 2);
+          r.fdsFolgaSD = num('r_fdsFolgaSD', 2);
+          r.fdsFolgaDS = num('r_fdsFolgaDS', 1);
+          r.minFolgaCasada = num('r_minFolgaCasada', 1);
+          r.maxFolgaSD = num('r_maxFolgaSD', 2);
+          r.maxDiasSeguidos = Math.max(1, num('r_maxDiasSeguidos', 12));
+          r.proibirFolgaDiaUtil = document.getElementById('r_proibirFolgaDiaUtil').checked;
+          r.isentarParDomingoCotaZero = document.getElementById('r_isentarParDomingoCotaZero').checked;
+          r.natalAtivo = document.getElementById('r_natalAtivo').checked;
+          r.natalAnoBase = num('r_natalAnoBase', 2026);
+          r.paresSeparados = document.getElementById('r_paresText').value
+            .split('\n')
+            .map(l => l.split('|').map(x => x.trim()).filter(Boolean))
+            .filter(p => p.length === 2);
+
+          saveState();
+          renderAll();
+          toast('Regras salvas e auditoria atualizada.');
+        });
+
+        document.getElementById('btnResetRules').addEventListener('click', () => {
+          state.rules = JSON.parse(JSON.stringify(ConfigModule.DEFAULT_RULES));
+          saveState();
+          renderAll();
+          toast('Regras restauradas para o padrão oficial.');
+        });
+
+        document.getElementById('btnAddTech').addEventListener('click', () => {
+          const newId = 't_' + Date.now();
+          state.team.push({ id: newId, name: 'Novo Técnico', role: 'Atendimento' });
+          ensureTeamGridIntegrity();
+          saveState();
+          renderAll();
+          toast('Técnico adicionado. Edite o nome e a função na tabela.');
+        });
+
+        document.getElementById('teamTable').addEventListener('change', (e) => {
+          const p = getCurrentPeriod();
+          if (e.target.dataset.teamName) {
+            const t = state.team.find(x => x.id === e.target.dataset.teamName);
+            if (t) t.name = e.target.value.trim() || t.name;
+          } else if (e.target.dataset.teamRole) {
+            const t = state.team.find(x => x.id === e.target.dataset.teamRole);
+            if (t) t.role = e.target.value;
+          } else if (e.target.dataset.teamStreak) {
+            if (!p.prevStreak) p.prevStreak = {};
+            p.prevStreak[e.target.dataset.teamStreak] = Math.max(0, Number(e.target.value) || 0);
+          }
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById('teamTable').addEventListener('click', (e) => {
+          const delId = e.target.dataset.teamDel;
+          if (!delId) return;
+          if (state.team.length <= 1) { toast('A equipe precisa ter ao menos 1 técnico.'); return; }
+          state.team = state.team.filter(t => t.id !== delId);
+          saveState();
+          renderAll();
+          toast('Técnico removido da equipe.');
+        });
+
+        const keyInput = document.getElementById('geminiApiKey');
+        keyInput.value = localStorage.getItem(API_KEY_STORAGE) || '';
+        keyInput.addEventListener('change', () => {
+          localStorage.setItem(API_KEY_STORAGE, keyInput.value.trim());
+        });
+        document.getElementById('btnToggleKeyVis').addEventListener('click', () => {
+          keyInput.type = keyInput.type === 'password' ? 'text' : 'password';
+        });
+        document.getElementById('btnLoadModels').addEventListener('click', async () => {
+          try {
+            const models = await GeminiAssistant.fetchModels(keyInput.value.trim());
+            state.geminiModels = models;
+            if (!models.includes(state.selectedModel)) state.selectedModel = models[0];
+            renderGeminiModelsSelect();
+            toast(`${models.length} modelo(s) Gemini carregado(s).`);
+          } catch (err) {
+            toast(`Erro ao carregar modelos: ${err.message}`);
+          }
+        });
+        document.getElementById('geminiModelSelect').addEventListener('change', (e) => {
+          state.selectedModel = e.target.value;
+          saveState();
+        });
+
+        const quickTexts = {
+          best: 'Monte a melhor escala possível para este período zerando todos os erros e alertas, equilibrando plantões e folgas casadas. Teste o conjunto final com testar_trocas.',
+          explain: 'Explique de forma clara e objetiva cada erro e alerta atual da escala e indique a causa raiz de cada um.',
+          balance: 'Analise o equilíbrio de sábados, domingos, feriados, PI, PE e folgas casadas entre os técnicos e sugira trocas para deixar mais justo sem quebrar nenhuma regra. Teste com testar_trocas.',
+          next: 'Considerando a sequência final de dias trabalhados de cada técnico neste período, planeje recomendações para o próximo período (quem deve folgar no primeiro fim de semana, quem deve fazer PI e folgas casadas).'
+        };
+        document.querySelectorAll('.btn-ai-quick').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const txt = quickTexts[btn.dataset.prompt];
+            document.getElementById('aiPromptInput').value = txt;
+            handleRunAI(txt);
+          });
+        });
+
+        document.getElementById('btnRunAI').addEventListener('click', () => handleRunAI());
+        document.getElementById('btnClearAI').addEventListener('click', () => {
+          document.getElementById('aiLogBox').style.display = 'none';
+          document.getElementById('aiResultArea').innerHTML = '';
+          lastAIProposal = null;
+        });
+
+        document.getElementById('btnCopyForGemini').addEventListener('click', async () => {
+          const fullPrompt = GeminiAssistant.buildContextPrompt(getCurrentPeriod(), state.team, state.rules, lastAudit) +
+            '\n\nTAREFA: Revise a escala acima seguindo o checklist obrigatório e liste as trocas exatas (colaborador, dia, de → para) para zerar os erros.';
+          try {
+            await navigator.clipboard.writeText(fullPrompt);
+            toast('Prompt completo copiado! Cole no gemini.google.com.');
+          } catch (_) {
+            toast('Não foi possível acessar a área de transferência.');
+          }
+        });
+
+        document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+        document.getElementById('modalBackdrop').addEventListener('click', (e) => {
+          if (e.target.id === 'modalBackdrop') closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeModal();
+        });
+      }
+
+      function init() {
+        loadState();
+        applyTheme();
+        renderGeminiModelsSelect();
+        bindEvents();
+        renderAll();
+      }
+
+      return { init };
+    })();
+
+    document.addEventListener('DOMContentLoaded', UI.init);
+  })();
+  </script>
+</body>
+</html>
